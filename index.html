@@ -3,26 +3,58 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>포천시 여론조사 현황</title>
+<title>포천 여론조사 판세 보드</title>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
 <style>
-  :root { --민주:#004EA2; --국힘:#C9151E; --조국:#006241; --진보:#7B2D8B; --개혁:#FF6D00; --기타:#78909C; }
+  :root { --민주:#004EA2; --국힘:#C9151E; }
   * { box-sizing:border-box; margin:0; padding:0; }
   body { font-family:'Apple SD Gothic Neo','Noto Sans KR',sans-serif; background:#F5F6FA; color:#1A1A2E; }
 
-  nav { background:#1A1A2E; color:#fff; padding:0 20px; display:flex; align-items:center; position:sticky; top:0; z-index:100; box-shadow:0 2px 8px rgba(0,0,0,0.3); }
-  .nav-brand { font-size:14px; font-weight:700; padding:15px 0; margin-right:20px; white-space:nowrap; }
-  .nav-tabs { display:flex; overflow-x:auto; }
-  .nav-tab { padding:15px 16px; cursor:pointer; font-size:12px; font-weight:500; border-bottom:3px solid transparent; white-space:nowrap; color:#AAB4C8; transition:all 0.2s; user-select:none; }
-  .nav-tab:hover { color:#fff; }
-  .nav-tab.active { color:#fff; border-bottom-color:#4F8EF7; }
+  /* ── 새 2행 nav ── */
+  nav { background:#1A1A2E; color:#fff; position:sticky; top:0; z-index:100; box-shadow:0 2px 8px rgba(0,0,0,0.3); }
+  .nav-title-row { padding:10px 20px 8px; border-bottom:1px solid rgba(255,255,255,0.08); text-align:center; }
+  .nav-brand { font-size:16px; font-weight:800; color:#fff; letter-spacing:-0.3px; }
+  .nav-brand span { color:#4F8EF7; }
+  .nav-tabs { display:flex; overflow-x:auto; padding:0 10px; gap:2px; scrollbar-width:none; }
+  .nav-tabs::-webkit-scrollbar { display:none; }
+  .nav-tab {
+    display:flex; flex-direction:column; align-items:center; gap:4px;
+    padding:8px 14px 9px; cursor:pointer; font-size:11px; font-weight:500;
+    border-bottom:3px solid transparent; white-space:nowrap;
+    color:#AAB4C8; transition:all 0.2s; user-select:none; border-radius:0;
+    min-width:60px;
+  }
+  .nav-tab .tab-icon { font-size:17px; line-height:1; }
+  .nav-tab .tab-label { line-height:1; }
+  .nav-tab:hover { color:#fff; background:rgba(255,255,255,0.06); }
+  .nav-tab.active { color:#fff; border-bottom-color:#4F8EF7; background:rgba(79,142,247,0.12); }
 
-  main { max-width:1280px; margin:0 auto; padding:24px 16px 60px; }
-  .section { display:none; }
+  /* 여론조사별 보기 드롭다운 */
+  .nav-dropdown { position:relative; }
+  .nav-dropdown-menu {
+    display:none; position:absolute; top:100%; left:0;
+    background:#252B3D; border-radius:0 0 8px 8px;
+    min-width:180px; box-shadow:0 8px 24px rgba(0,0,0,0.4);
+    z-index:200; overflow:hidden;
+  }
+  .nav-dropdown:hover .nav-dropdown-menu,
+  .nav-dropdown.open .nav-dropdown-menu { display:block; }
+  .nav-dropdown-item {
+    padding:12px 18px; font-size:12px; color:#AAB4C8;
+    cursor:pointer; transition:all 0.15s; white-space:nowrap;
+    border-bottom:1px solid rgba(255,255,255,0.05);
+  }
+  .nav-dropdown-item:last-child { border-bottom:none; }
+  .nav-dropdown-item:hover { background:#2E3650; color:#fff; }
+  .nav-dropdown-item.active { color:#4F8EF7; }
+  .nav-tab-arrow { font-size:9px; margin-left:4px; opacity:0.6; }
+
+  main { max-width:1280px; margin:0 auto; padding:24px 16px 60px; background:#F5F6FA; }
+  .section { display:none; background:#F5F6FA; }
   .section.active { display:block; }
 
   .page-title { margin-bottom:20px; }
-  .page-title h2 { font-size:20px; font-weight:700; }
+  .page-title h2 { font-size:20px; font-weight:700; color:#1A1A2E; }
   .page-title p { font-size:12px; color:#666; margin-top:3px; }
 
   .survey-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(320px,1fr)); gap:14px; margin-bottom:28px; }
@@ -39,7 +71,6 @@
   .meta-item { display:flex; flex-direction:column; }
   .meta-label { font-size:10px; color:#888; }
   .meta-value { font-size:12px; font-weight:600; color:#1A1A2E; margin-top:1px; }
-  .meta-value.gray { color:#999; font-weight:400; }
 
   .chart-card { background:#fff; border-radius:10px; padding:20px; box-shadow:0 1px 4px rgba(0,0,0,0.08); margin-bottom:20px; }
   .chart-title { font-size:15px; font-weight:700; margin-bottom:3px; }
@@ -57,20 +88,20 @@
   .mini-bar-pct { width:36px; color:#333; font-weight:600; font-size:11px; flex-shrink:0; }
 
   .data-table { width:100%; border-collapse:collapse; font-size:12px; }
+  .data-table th:first-child, .data-table td:first-child { min-width:72px; }
   .data-table th { background:#1A1A2E; color:#fff; padding:8px 10px; text-align:left; font-weight:600; font-size:11px; }
   .data-table td { padding:8px 10px; border-bottom:1px solid #ECEFF1; }
-  .data-table tr:hover td { background:#F8F9FF; }
-  .data-table .nd { color:#B0BEC5; }
+  .data-table tr:hover td { background:#FEFCE8; }
 
   .org-header { display:flex; align-items:center; gap:12px; background:#fff; border-radius:10px; padding:18px 20px; margin-bottom:18px; box-shadow:0 1px 4px rgba(0,0,0,0.08); }
   .org-icon { width:44px; height:44px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:18px; background:#E3F2FD; }
   .org-info h3 { font-size:17px; font-weight:700; }
   .org-info p { font-size:12px; color:#666; margin-top:2px; }
 
-  .tabs-inner { display:flex; gap:0; border-bottom:2px solid #ECEFF1; margin-bottom:20px; }
-  .tab-inner { padding:10px 16px; cursor:pointer; font-size:12px; font-weight:600; border-bottom:2px solid transparent; color:#888; margin-bottom:-2px; }
-  .tab-inner.active { color:#1A1A2E; border-bottom-color:#4F8EF7; }
-
+  .tabs-inner { display:flex; gap:0; border-bottom:2px solid #ECEFF1; margin-bottom:20px; overflow-x:auto; background:#fff; border-radius:8px 8px 0 0; }
+  .tab-inner { padding:10px 16px; cursor:pointer; font-size:12px; font-weight:600; border-bottom:2px solid transparent; color:#888; margin-bottom:-2px; white-space:nowrap; background:transparent; }
+  .tab-inner:hover { color:#1A1A2E; background:#F8F9FF; }
+  .tab-inner.active { color:#004EA2; border-bottom-color:#004EA2; background:#EFF6FF; border-radius:6px 6px 0 0; }
   .tab-panel { display:none; }
   .tab-panel.active { display:block; }
 
@@ -84,35 +115,38 @@
 </head>
 <body>
 <nav>
-  <div class="nav-brand">📊 포천시 여론조사</div>
+  <div class="nav-title-row">
+    <div class="nav-brand">📊 <span>포천</span> 여론조사 판세 보드</div>
+  </div>
   <div class="nav-tabs">
-    <div class="nav-tab active" onclick="showSection('overview')">전체 현황</div>
-    <div class="nav-tab" onclick="showSection('party')">정당 지지도</div>
-    <div class="nav-tab" onclick="showSection('mayor')">포천시장 지지도</div>
-    <div class="nav-tab" onclick="showSection('realmeter')">포천뉴스-리얼미터</div>
-    <div class="nav-tab" onclick="showSection('rnsearch')">포천좋은신문-알앤써치</div>
+    <div class="nav-tab active" onclick="showSection('party',this)">
+      <span class="tab-icon">📈</span><span class="tab-label">정당 지지도</span>
+    </div>
+    <div class="nav-tab" onclick="showSection('mayor',this)">
+      <span class="tab-icon">🏛️</span><span class="tab-label">지선 지지도</span>
+    </div>
+    <div class="nav-tab" onclick="showSection('district',this)">
+      <span class="tab-icon">🗺️</span><span class="tab-label">선거구별</span>
+    </div>
+    <div class="nav-tab" onclick="showSection('age',this)">
+      <span class="tab-icon">👥</span><span class="tab-label">연령별</span>
+    </div>
+    <div class="nav-tab" onclick="showSection('orgview',this)">
+      <span class="tab-icon">🔍</span><span class="tab-label">여론조사별</span>
+    </div>
+    <div class="nav-tab" onclick="showSection('cards',this)">
+      <span class="tab-icon">📋</span><span class="tab-label">기타</span>
+    </div>
   </div>
 </nav>
 
 <main>
 
-<section class="section active" id="overview">
-  <div class="page-title">
-    <h2>포천시 여론조사 현황</h2>
-    <p>2026.02.~05. · 상반기 실시된 포천시 관련 여론조사 총 10건 전수 데이터</p>
-  </div>
-  <div class="survey-grid" id="allCards"></div>
-  <div class="chart-card">
-    <div class="chart-title">정당 지지도 추이 — 더불어민주당 vs 국민의힘</div>
-    <div class="chart-sub">전체 10개 조사 · 단위: % · 커서를 올리면 격차 표시</div>
-    <div class="chart-wrap" style="height:280px"><canvas id="overviewChart"></canvas></div>
-  </div>
-</section>
-
-<section class="section" id="party">
+<!-- ===== 정당 지지도 ===== -->
+<section class="section active" id="party">
   <div class="page-title">
     <h2>정당 지지도</h2>
-    <p>2026.02.~05. · 전체 10개 조사 · 커서를 올리면 민주·국힘 수치 및 격차 표시</p>
+    <p>전체 10개 조사 · 단위: %</p>
   </div>
   <div class="chart-card">
     <div class="chart-title">정당별 지지도 추이 (전체 정당)</div>
@@ -120,100 +154,304 @@
     <div class="chart-wrap" style="height:340px"><canvas id="partyTrendChart"></canvas></div>
     <div class="custom-legend" id="partyLegend"></div>
   </div>
-  <div class="chart-card">
-    <div class="chart-title">조사별 정당 지지도 비교</div>
-    <div class="chart-sub">묶음 막대그래프 · 단위: %</div>
-    <div class="chart-wrap" style="height:380px"><canvas id="partyGroupChart"></canvas></div>
-  </div>
+
   <div class="chart-card">
     <div class="chart-title">상세 수치표</div>
     <div style="overflow-x:auto"><table class="data-table" id="partyTable"></table></div>
   </div>
 </section>
 
+<!-- ===== 포천시장 ===== -->
 <section class="section" id="mayor">
   <div class="page-title">
-    <h2>포천시장 후보 지지도</h2>
-    <p>확정후보 4개 조사 + 가상대결 5개 조사 + 다자대결 1개 조사 · 커서를 올리면 수치 및 격차 표시</p>
+    <h2>시장 후보 지지도</h2>
+    <p>박윤국 vs 백영현 · 전체 10개 조사 · 단위: %</p>
+  </div>
+
+
+  <div id="virtual">
+    <div class="chart-card">
+      <div class="chart-title">박윤국 vs 백영현 추이</div>
+      <div class="chart-sub">가상대결·다자대결·확정후보 포함 전 조사 · 단위: %</div>
+      <div class="chart-wrap" style="height:300px"><canvas id="virtualTrendChart"></canvas></div>
+      <div style="display:flex;gap:16px;margin-top:12px;font-size:11px;color:#666">
+        <span style="display:flex;align-items:center;gap:5px"><span style="width:12px;height:12px;background:rgba(180,130,40,0.25);border-radius:2px;display:inline-block;border:1px solid rgba(180,130,40,0.5)"></span>가상대결·참고지표 구간</span>
+        <span style="display:flex;align-items:center;gap:5px"><span style="width:12px;height:12px;background:rgba(20,160,120,0.25);border-radius:2px;display:inline-block;border:1px solid rgba(20,160,120,0.5)"></span>확정후보 구간</span>
+      </div>
+    </div>
+    <div class="chart-card">
+      <div class="chart-title">전체 수치표</div>
+      <div style="overflow-x:auto"><table class="data-table" id="virtualTable"></table></div>
+    </div>
+  </div>
+
+</section>
+
+<!-- ===== 선거구별 지지도 ===== -->
+<section class="section" id="district">
+  <div class="page-title">
+    <h2>선거구별 보기</h2>
+    <p>1선거구(가선거구) vs 2선거구(나선거구) · 단위: %</p>
+  </div>
+
+  <!-- 선거구 설명 -->
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:20px">
+    <div style="background:#F0FDF4;border-radius:10px;padding:14px 18px;border-left:4px solid #059669">
+      <div style="font-weight:700;font-size:13px;color:#059669;margin-bottom:4px">1선거구 (가선거구)</div>
+      <div style="font-size:11px;color:#555">포천동·선단동 / 군내·신북·창수·영중·영북·관인면</div>
+    </div>
+    <div style="background:#FFFBEB;border-radius:10px;padding:14px 18px;border-left:4px solid #D97706">
+      <div style="font-weight:700;font-size:13px;color:#D97706;margin-bottom:4px">2선거구 (나선거구)</div>
+      <div style="font-size:11px;color:#555">소흘읍 / 내촌·가산·일동·이동·화현면</div>
+    </div>
   </div>
 
   <div class="tabs-inner">
-    <div class="tab-inner active" onclick="showTab(this,'confirmed')">확정후보 지지도</div>
-    <div class="tab-inner" onclick="showTab(this,'virtual')">가상대결 결과</div>
-    <div class="tab-inner" onclick="showTab(this,'mayortable')">전체 수치표</div>
+    <div class="tab-inner active" onclick="showTab(this,'dist-party')">정당 지지도</div>
+    <div class="tab-inner" onclick="showTab(this,'dist-mayor')">지선 지지도</div>
+
   </div>
 
-  <div class="tab-panel active" id="confirmed">
+  <!-- 정당 지지도 탭 -->
+  <div class="tab-panel active" id="dist-party">
     <div class="chart-card">
-      <div class="chart-title">포천시장 후보 지지도 추이 (확정 후보)</div>
-      <div class="chart-sub">박윤국(더불어민주당) vs 백영현(국민의힘) · 2026년 5월 4개 조사 · 단위: %</div>
-      <div class="chart-wrap" style="height:300px"><canvas id="mayorTrendChart"></canvas></div>
+      <div class="chart-title">1·2선거구 정당 지지도 비교 추이</div>
+      <div class="chart-sub">실선=1선거구 · 점선=2선거구 · 단위: %</div>
+      <div class="chart-wrap" style="height:320px"><canvas id="distPartyChart"></canvas></div>
+      <div style="display:flex;flex-wrap:wrap;gap:8px 20px;margin-top:10px;font-size:11px;color:#666">
+        <span style="display:flex;align-items:center;gap:5px"><span style="width:18px;height:2px;background:#004EA2;display:inline-block"></span>민주 1선거구</span>
+        <span style="display:flex;align-items:center;gap:5px"><span style="width:18px;height:2px;background:#004EA2;display:inline-block;opacity:0.5;border-top:2px dashed #004EA2;height:0"></span>민주 2선거구</span>
+        <span style="display:flex;align-items:center;gap:5px"><span style="width:18px;height:2px;background:#C9151E;display:inline-block"></span>국민 1선거구</span>
+        <span style="display:flex;align-items:center;gap:5px"><span style="width:18px;height:0;border-top:2px dashed #C9151E;display:inline-block"></span>국민 2선거구</span>
+      </div>
+    </div>
+    <!-- 4권역 정당지지도 차트 - 수치표 위 -->
+    <div class="chart-card" style="margin-top:4px">
+      <div class="chart-title" style="margin-bottom:10px">4개 권역 정당지지도 — 권역별 상세</div>
+      <div style="display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap">
+        <button onclick="selectZoneParty('A')" id="zonePBtn-A" style="padding:6px 14px;border-radius:16px;border:2px solid #6B7280;background:#F3F4F6;color:#374151;font-weight:700;font-size:11px;cursor:pointer">A권역 (포천동·선단동)</button>
+        <button onclick="selectZoneParty('B')" id="zonePBtn-B" style="padding:6px 14px;border-radius:16px;border:2px solid #9CA3AF;background:#fff;color:#4B5563;font-weight:600;font-size:11px;cursor:pointer">B권역 (군내·신북 등)</button>
+        <button onclick="selectZoneParty('C')" id="zonePBtn-C" style="padding:6px 14px;border-radius:16px;border:2px solid #9CA3AF;background:#fff;color:#4B5563;font-weight:600;font-size:11px;cursor:pointer">C권역 (소흘읍)</button>
+        <button onclick="selectZoneParty('D')" id="zonePBtn-D" style="padding:6px 14px;border-radius:16px;border:2px solid #9CA3AF;background:#fff;color:#4B5563;font-weight:600;font-size:11px;cursor:pointer">D권역 (내촌·가산 등)</button>
+      </div>
+      <div id="zonePChartTitle" style="font-size:12px;color:#555;margin-bottom:8px">A권역 (포천동·선단동) — 더불어민주당 vs 국민의힘</div>
+      <div class="chart-wrap" style="height:260px"><canvas id="distZonePartyChart"></canvas></div>
     </div>
     <div class="chart-card">
-      <div class="chart-title">조사별 전체 후보 지지도</div>
-      <div class="chart-sub">묶음 막대그래프 · 단위: %</div>
-      <div class="chart-wrap" style="height:360px"><canvas id="mayorGroupChart"></canvas></div>
+      <div class="chart-title">선거구별 정당 지지도 비교 수치표</div>
+      <div style="overflow-x:auto"><table class="data-table" id="distPartyTable"></table></div>
+    </div>
+    <div class="chart-card">
+      <div class="chart-title">4개 권역 상세 정당 지지도 수치표</div>
+      <div style="overflow-x:auto"><table class="data-table" id="distPartyDetailTable"></table></div>
     </div>
   </div>
 
-  <div class="tab-panel" id="virtual">
+  <!-- 박윤국 vs 백영현 탭 -->
+  <div class="tab-panel" id="dist-mayor">
     <div class="chart-card">
-      <div class="chart-title">박윤국 vs 백영현 — 전 조사 통합 추이</div>
-      <div class="chart-sub">2~3월=가상대결, 5월=확정후보 지지도 · 단위: %</div>
-      <div class="chart-wrap" style="height:300px"><canvas id="virtualTrendChart"></canvas></div>
+      <div class="chart-title">1·2선거구 — 박윤국 vs 백영현 비교 추이</div>
+      <div class="chart-sub">실선=1선거구 · 점선=2선거구 · 단위: %</div>
+      <div class="chart-wrap" style="height:340px"><canvas id="distMayorChart"></canvas></div>
+      <div style="display:flex;flex-wrap:wrap;gap:8px 20px;margin-top:10px;font-size:11px;color:#666">
+        <span style="display:flex;align-items:center;gap:5px"><span style="width:18px;height:2px;background:#004EA2;display:inline-block"></span>박윤국 1선거구</span>
+        <span style="display:flex;align-items:center;gap:5px"><span style="width:18px;height:0;border-top:2px dashed #004EA2;display:inline-block"></span>박윤국 2선거구</span>
+        <span style="display:flex;align-items:center;gap:5px"><span style="width:18px;height:2px;background:#C9151E;display:inline-block"></span>백영현 1선거구</span>
+        <span style="display:flex;align-items:center;gap:5px"><span style="width:18px;height:0;border-top:2px dashed #C9151E;display:inline-block"></span>백영현 2선거구</span>
+        <span style="display:flex;align-items:center;gap:5px;margin-left:8px"><span style="width:12px;height:12px;background:rgba(180,130,40,0.25);border-radius:2px;display:inline-block;border:1px solid rgba(180,130,40,0.5)"></span>확정 전</span>
+        <span style="display:flex;align-items:center;gap:5px"><span style="width:12px;height:12px;background:rgba(20,160,120,0.25);border-radius:2px;display:inline-block;border:1px solid rgba(20,160,120,0.5)"></span>확정 후</span>
+      </div>
     </div>
-    <div id="simBarsContainer"></div>
+    <div class="chart-card">
+      <div class="chart-title">선거구별 후보 지지도 비교 수치표</div>
+      <div style="overflow-x:auto"><table class="data-table" id="distMayorTable"></table></div>
+    </div>
+    <!-- 4권역 후보지지도 -->
+    <div class="chart-card" style="margin-top:4px">
+      <div class="chart-title" style="margin-bottom:10px">4개 권역 후보지지도 — 권역별 상세</div>
+      <div style="display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap">
+        <button onclick="selectZoneMayor('A')" id="zoneMBtn-A" style="padding:6px 14px;border-radius:16px;border:2px solid #6B7280;background:#F3F4F6;color:#374151;font-weight:700;font-size:11px;cursor:pointer">A권역 (포천동·선단동)</button>
+        <button onclick="selectZoneMayor('B')" id="zoneMBtn-B" style="padding:6px 14px;border-radius:16px;border:2px solid #9CA3AF;background:#fff;color:#4B5563;font-weight:600;font-size:11px;cursor:pointer">B권역 (군내·신북 등)</button>
+        <button onclick="selectZoneMayor('C')" id="zoneMBtn-C" style="padding:6px 14px;border-radius:16px;border:2px solid #9CA3AF;background:#fff;color:#4B5563;font-weight:600;font-size:11px;cursor:pointer">C권역 (소흘읍)</button>
+        <button onclick="selectZoneMayor('D')" id="zoneMBtn-D" style="padding:6px 14px;border-radius:16px;border:2px solid #9CA3AF;background:#fff;color:#4B5563;font-weight:600;font-size:11px;cursor:pointer">D권역 (내촌·가산 등)</button>
+      </div>
+      <div id="zoneMChartTitle" style="font-size:12px;color:#555;margin-bottom:8px">A권역 (포천동·선단동) — 박윤국 vs 백영현</div>
+      <div class="chart-wrap" style="height:260px"><canvas id="distZoneMayorChart"></canvas></div>
+    </div>
+    <div class="chart-card">
+      <div class="chart-title">4개 권역 상세 후보 지지도 수치표</div>
+      <div style="overflow-x:auto"><table class="data-table" id="distDetailTable"></table></div>
+    </div>
   </div>
 
-  <div class="tab-panel" id="mayortable">
-    <div class="chart-card">
-      <div class="chart-title">전체 포천시장 관련 조사 수치표</div>
-      <div style="overflow-x:auto"><table class="data-table" id="mayorTable"></table></div>
+
+</section>
+
+<!-- ===== 연령별 보기 ===== -->
+<section class="section" id="age">
+  <div class="page-title">
+    <h2>연령별 지지도</h2>
+    <p>연령대를 선택하면 해당 세대의 정당·후보 지지율 추이를 볼 수 있습니다</p>
+  </div>
+
+  <!-- 연령대 선택 버튼 -->
+  <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:20px" id="ageBtns"></div>
+
+  <!-- 차트 2개 -->
+  <div class="chart-card" id="ageChartCard">
+    <div id="ageChartTitle" class="chart-title">18~29세 — 정당 지지도 추이</div>
+    <div class="chart-sub">더불어민주당 vs 국민의힘 · ⬤=1,000명+ · 단위: %</div>
+    <div class="chart-wrap" style="height:280px"><canvas id="agePartyChart"></canvas></div>
+    <div style="display:flex;gap:16px;margin-top:10px;font-size:11px;color:#666">
+      <span style="display:flex;align-items:center;gap:5px"><span style="width:18px;height:2px;background:#004EA2;display:inline-block"></span>더불어민주당</span>
+      <span style="display:flex;align-items:center;gap:5px"><span style="width:18px;height:2px;background:#C9151E;display:inline-block"></span>국민의힘</span>
+    </div>
+  </div>
+  <div class="chart-card">
+    <div id="ageMayorChartTitle" class="chart-title">18~29세 — 지선 지지도 추이</div>
+    <div class="chart-sub">박윤국(민주) vs 백영현(국민) · ⬤=1,000명+ · 단위: %</div>
+    <div class="chart-wrap" style="height:280px"><canvas id="ageMayorChart"></canvas></div>
+    <div style="display:flex;gap:16px;margin-top:10px;font-size:11px;color:#666">
+      <span style="display:flex;align-items:center;gap:5px"><span style="width:18px;height:2px;background:#004EA2;display:inline-block"></span>박윤국(민주)</span>
+      <span style="display:flex;align-items:center;gap:5px"><span style="width:18px;height:2px;background:#C9151E;display:inline-block"></span>백영현(국민)</span>
     </div>
   </div>
 </section>
 
+<!-- ===== 여론조사별 보기 ===== -->
+<section class="section" id="orgview">
+  <div class="page-title">
+    <h2>여론조사별 보기</h2>
+    <p>기관별 상세 분석</p>
+  </div>
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:28px">
+    <div onclick="showSection('realmeter',null)" style="background:#fff;border-radius:14px;border:1.5px solid #E5E7EB;padding:24px 28px;cursor:pointer;box-shadow:0 1px 4px rgba(0,0,0,.06)"
+         onmouseover="this.style.boxShadow='0 4px 16px rgba(0,78,162,.15)';this.style.borderColor='#93C5FD'"
+         onmouseout="this.style.boxShadow='0 1px 4px rgba(0,0,0,.06)';this.style.borderColor='#E5E7EB'">
+      <div style="font-size:22px;margin-bottom:10px">📰</div>
+      <div style="font-weight:700;font-size:15px;color:#1E3A5F;margin-bottom:6px">포천뉴스 · 리얼미터</div>
+      <div style="font-size:12px;color:#6B7280;line-height:1.6">총 4회 조사<br>02월 · 03월 · 05월초 · 05월말<br>정당지지도 · 후보추이 · 선거구별</div>
+      <div style="margin-top:10px;display:flex;flex-wrap:wrap;gap:5px">
+        <span style="background:#FEF9C3;border:1px solid #FDE047;color:#854D0E;padding:2px 8px;border-radius:10px;font-size:11px;font-weight:700">⬤ 전 회차 1,000명+</span>
+        <span style="background:#F0FDF4;border:1px solid #86EFAC;color:#166534;padding:2px 8px;border-radius:10px;font-size:11px;font-weight:600">1,001~1,020명</span>
+      </div>
+      <div style="margin-top:12px;font-size:11px;color:#004EA2;font-weight:600">상세 보기 →</div>
+    </div>
+    <div onclick="showSection('rnsearch',null)" style="background:#fff;border-radius:14px;border:1.5px solid #E5E7EB;padding:24px 28px;cursor:pointer;box-shadow:0 1px 4px rgba(0,0,0,.06)"
+         onmouseover="this.style.boxShadow='0 4px 16px rgba(0,78,162,.15)';this.style.borderColor='#93C5FD'"
+         onmouseout="this.style.boxShadow='0 1px 4px rgba(0,0,0,.06)';this.style.borderColor='#E5E7EB'">
+      <div style="font-size:22px;margin-bottom:10px">📋</div>
+      <div style="font-weight:700;font-size:15px;color:#1E3A5F;margin-bottom:6px">포천좋은신문 · 알앤써치</div>
+      <div style="font-size:12px;color:#6B7280;line-height:1.6">총 2회 조사<br>03월 가상대결 · 05월 확정후보<br>정당지지도 · 후보추이 · 선거구별</div>
+      <div style="margin-top:14px;font-size:11px;color:#004EA2;font-weight:600">상세 보기 →</div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== 포천뉴스-리얼미터 ===== -->
 <section class="section" id="realmeter">
   <div class="org-header">
     <div class="org-icon">📰</div>
     <div class="org-info">
       <h3>포천뉴스 · 리얼미터</h3>
-      <p>2026년 상반기 총 4회 조사 (2월·3월·5월초·5월말) — 데이터 완비</p>
+      <p>총 4회 조사 (02월 · 03월 · 05월초 · 05월말)</p>
     </div>
   </div>
-  <div class="survey-grid" id="realmeterCards"></div>
   <div class="chart-card">
     <div class="chart-title">정당 지지도 추이</div>
-    <div class="chart-sub">4회 조사 · 단위: % · 커서를 올리면 민주·국힘 격차 표시</div>
+    <div class="chart-sub">4회 조사 · 단위: %</div>
     <div class="chart-wrap" style="height:300px"><canvas id="rmPartyChart"></canvas></div>
     <div class="custom-legend" id="rmPartyLegend"></div>
   </div>
   <div class="chart-card">
     <div class="chart-title">박윤국 vs 백영현 추이</div>
-    <div class="chart-sub">2·3월=가상대결, 5월초=호감도, 5월말=확정후보 지지도 · 단위: %</div>
+    <div class="chart-sub">02·03월=가상대결, 05월초=호감도, 05월말=확정후보 지지도 · 단위: %</div>
     <div class="chart-wrap" style="height:280px"><canvas id="rmMayorChart"></canvas></div>
   </div>
+  <div class="chart-card">
+    <div class="chart-title">선거구별 지지도 추이 — 1선거구 vs 2선거구</div>
+    <div class="chart-sub">정당지지도: 실선 · 후보지지도: 점선 · 단위: %</div>
+    <div class="tabs-inner" style="margin-bottom:12px">
+      <div class="tab-inner active" onclick="showTab(this,'rmDistParty')">정당 지지도</div>
+      <div class="tab-inner" onclick="showTab(this,'rmDistMayor')">박윤국 vs 백영현</div>
+    </div>
+    <div class="tab-panel active" id="rmDistParty">
+      <div class="chart-wrap" style="height:280px"><canvas id="rmDistPartyChart"></canvas></div>
+      <div style="display:flex;flex-wrap:wrap;gap:8px 16px;margin-top:10px;font-size:11px;color:#666">
+        <span style="display:flex;align-items:center;gap:5px"><span style="width:18px;height:2px;background:#004EA2;display:inline-block"></span>민주 1선거구</span>
+        <span style="display:flex;align-items:center;gap:5px"><span style="width:18px;height:0;border-top:2px dashed #004EA2;display:inline-block"></span>민주 2선거구</span>
+        <span style="display:flex;align-items:center;gap:5px"><span style="width:18px;height:2px;background:#C9151E;display:inline-block"></span>국민 1선거구</span>
+        <span style="display:flex;align-items:center;gap:5px"><span style="width:18px;height:0;border-top:2px dashed #C9151E;display:inline-block"></span>국민 2선거구</span>
+      </div>
+    </div>
+    <div class="tab-panel" id="rmDistMayor">
+      <div class="chart-wrap" style="height:280px"><canvas id="rmDistMayorChart"></canvas></div>
+      <div style="display:flex;flex-wrap:wrap;gap:8px 16px;margin-top:10px;font-size:11px;color:#666">
+        <span style="display:flex;align-items:center;gap:5px"><span style="width:18px;height:2px;background:#004EA2;display:inline-block"></span>박윤국 1선거구</span>
+        <span style="display:flex;align-items:center;gap:5px"><span style="width:18px;height:0;border-top:2px dashed #004EA2;display:inline-block"></span>박윤국 2선거구</span>
+        <span style="display:flex;align-items:center;gap:5px"><span style="width:18px;height:2px;background:#C9151E;display:inline-block"></span>백영현 1선거구</span>
+        <span style="display:flex;align-items:center;gap:5px"><span style="width:18px;height:0;border-top:2px dashed #C9151E;display:inline-block"></span>백영현 2선거구</span>
+      </div>
+    </div>
+  </div>
+  <div class="survey-grid" id="realmeterCards"></div>
 </section>
 
+<!-- ===== 포천좋은신문-알앤써치 ===== -->
 <section class="section" id="rnsearch">
   <div class="org-header">
     <div class="org-icon">📋</div>
     <div class="org-info">
       <h3>포천좋은신문 · 알앤써치</h3>
-      <p>2026년 상반기 총 2회 조사 (3월 가상대결 · 5월 확정후보) — 데이터 완비</p>
+      <p>총 2회 조사 (03월 가상대결 · 05월 확정후보)</p>
     </div>
   </div>
-  <div class="survey-grid" id="rnsearchCards"></div>
   <div class="chart-card">
     <div class="chart-title">정당 지지도 추이</div>
-    <div class="chart-sub">2회 조사 비교 · 단위: % · 커서를 올리면 민주·국힘 격차 표시</div>
+    <div class="chart-sub">2회 조사 비교 · 단위: %</div>
     <div class="chart-wrap" style="height:300px"><canvas id="rnsPartyChart"></canvas></div>
   </div>
   <div class="chart-card">
     <div class="chart-title">박윤국 vs 백영현 추이</div>
-    <div class="chart-sub">3월=가상대결, 5월=확정후보 지지도 · 단위: %</div>
+    <div class="chart-sub">03월=가상대결, 05월=확정후보 지지도 · 단위: %</div>
     <div class="chart-wrap" style="height:280px"><canvas id="rnsMayorChart"></canvas></div>
   </div>
+  <div class="chart-card">
+    <div class="chart-title">선거구별 지지도 추이 — 1선거구 vs 2선거구</div>
+    <div class="chart-sub">정당지지도: 실선 · 후보지지도: 점선 · 단위: %</div>
+    <div class="tabs-inner" style="margin-bottom:12px">
+      <div class="tab-inner active" onclick="showTab(this,'rnsDistParty')">정당 지지도</div>
+      <div class="tab-inner" onclick="showTab(this,'rnsDistMayor')">박윤국 vs 백영현</div>
+    </div>
+    <div class="tab-panel active" id="rnsDistParty">
+      <div class="chart-wrap" style="height:280px"><canvas id="rnsDistPartyChart"></canvas></div>
+      <div style="display:flex;flex-wrap:wrap;gap:8px 16px;margin-top:10px;font-size:11px;color:#666">
+        <span style="display:flex;align-items:center;gap:5px"><span style="width:18px;height:2px;background:#004EA2;display:inline-block"></span>민주 1선거구</span>
+        <span style="display:flex;align-items:center;gap:5px"><span style="width:18px;height:0;border-top:2px dashed #004EA2;display:inline-block"></span>민주 2선거구</span>
+        <span style="display:flex;align-items:center;gap:5px"><span style="width:18px;height:2px;background:#C9151E;display:inline-block"></span>국민 1선거구</span>
+        <span style="display:flex;align-items:center;gap:5px"><span style="width:18px;height:0;border-top:2px dashed #C9151E;display:inline-block"></span>국민 2선거구</span>
+      </div>
+    </div>
+    <div class="tab-panel" id="rnsDistMayor">
+      <div class="chart-wrap" style="height:280px"><canvas id="rnsDistMayorChart"></canvas></div>
+      <div style="display:flex;flex-wrap:wrap;gap:8px 16px;margin-top:10px;font-size:11px;color:#666">
+        <span style="display:flex;align-items:center;gap:5px"><span style="width:18px;height:2px;background:#004EA2;display:inline-block"></span>박윤국 1선거구</span>
+        <span style="display:flex;align-items:center;gap:5px"><span style="width:18px;height:0;border-top:2px dashed #004EA2;display:inline-block"></span>박윤국 2선거구</span>
+        <span style="display:flex;align-items:center;gap:5px"><span style="width:18px;height:2px;background:#C9151E;display:inline-block"></span>백영현 1선거구</span>
+        <span style="display:flex;align-items:center;gap:5px"><span style="width:18px;height:0;border-top:2px dashed #C9151E;display:inline-block"></span>백영현 2선거구</span>
+      </div>
+    </div>
+  </div>
+  <div class="survey-grid" id="rnsearchCards"></div>
+</section>
+
+<!-- ===== 기타 ===== -->
+<section class="section" id="cards">
+  <div class="page-title">
+    <h2>기타</h2>
+    <p>전체 여론조사 목록 · 10건</p>
+  </div>
+  <div class="survey-grid" id="allCards"></div>
 </section>
 
 </main>
@@ -224,105 +462,133 @@ const PC = {
   "지지정당없음":"#90A4AE","잘모름":"#CFD8DC"
 };
 const MC = {
-  "박윤국(민주)":"#004EA2","백영현(국힘)":"#C9151E","이재수(무소속)":"#5D4037",
-  "이명원":"#558B2F","손세화":"#6A1B9A","기타":"#78909C",
-  "없다":"#B0BEC5","없다+모름":"#CFD8DC","잘모름":"#E0E0E0"
+  "박윤국(민주)":"#004EA2","백영현(국민)":"#C9151E","이재수(무소속)":"#5D4037",
+  "이명원":"#558B2F","손세화":"#6A1B9A",
+  "기타":"#78909C","없다":"#B0BEC5","없다+모름":"#B0BEC5","잘모름":"#CFD8DC"
 };
 
 const SURVEYS = [
-  { id:1, num:"①", date:"2026.01.30~31", dateSort:"2026-01-30", client:"포천일보", agency:"리서치뷰", label:"포천일보-리서치뷰", sampleSize:1000, responseRate:6.8, org:"others",
+  { id:1, num:"①", date:"01.30~31", dateSort:"2026-01-30", client:"포천일보", agency:"리서치뷰", label:"포천일보-리서치뷰", short:"포천일보-뷰", sampleSize:1000, responseRate:6.8, org:"others",
     party:{"더불어민주당":43.5,"국민의힘":34.3,"조국혁신당":3.4,"진보당":1.6,"개혁신당":4.2,"기타정당":1.9,"지지정당없음":11.1,"잘모름":null},
-    mayor:{type:"가상대결", sims:[{label:"박윤국 vs 백영현","박윤국(민주)":42.5,"백영현(국힘)":44.8}], parkVsBaek:{park:42.5,baek:44.8}} },
-  { id:2, num:"②", date:"2026.02.06~07", dateSort:"2026-02-06", client:"포천뉴스", agency:"리얼미터", label:"포천뉴스-리얼미터", sampleSize:1001, responseRate:8.9, org:"realmeter",
+    mayor:{type:"가상대결", sims:[{label:"박윤국 vs 백영현","박윤국(민주)":42.5,"백영현(국민)":44.8}], parkVsBaek:{park:42.5,baek:44.8}} },
+  { id:2, num:"②", date:"02.06~07", dateSort:"2026-02-06", client:"포천뉴스", agency:"리얼미터", label:"포천뉴스-리얼미터", short:"포천뉴스-리얼", sampleSize:1001, responseRate:8.9, org:"realmeter",
     party:{"더불어민주당":38.4,"국민의힘":37.6,"조국혁신당":4.1,"진보당":1.3,"개혁신당":3.8,"기타정당":3.6,"지지정당없음":9.5,"잘모름":1.7},
-    mayor:{type:"가상대결", sims:[{label:"박윤국 vs 백영현","박윤국(민주)":39.8,"백영현(국힘)":44.1,"없다":6.9,"잘모름":9.3}], parkVsBaek:{park:39.8,baek:44.1}} },
-  { id:3, num:"③", date:"2026.02.27~28", dateSort:"2026-02-27", client:"중부일보", agency:"데일리리서치", label:"중부일보-데일리리서치", sampleSize:700, responseRate:3.0, org:"others",
+    mayor:{type:"가상대결", sims:[{label:"박윤국 vs 백영현","박윤국(민주)":39.8,"백영현(국민)":44.1,"없다":6.9,"잘모름":9.3}], parkVsBaek:{park:39.8,baek:44.1}} },
+  { id:3, num:"③", date:"02.27~28", dateSort:"2026-02-27", client:"중부일보", agency:"데일리리서치", label:"중부일보-데일리리서치", short:"중부일보-데일리", sampleSize:700, responseRate:3.0, org:"others",
     party:{"더불어민주당":48.8,"국민의힘":38.5,"조국혁신당":0.6,"진보당":0.7,"개혁신당":0.9,"기타정당":1.0,"지지정당없음":6.8,"잘모름":2.8},
-    mayor:{type:"다자대결", results:{"박윤국(민주)":33.9,"백영현(국힘)":29.1,"연제창":13.3,"손세화":4.9,"강준모":3.1,"기타":2.9,"없다":7.2,"잘모름":5.6}, parkVsBaek:{park:33.9,baek:29.1}} },
-  { id:4, num:"④", date:"2026.03.14~15", dateSort:"2026-03-14", client:"포천좋은신문", agency:"알앤써치", label:"포천좋은신문-알앤써치", sampleSize:503, responseRate:8.0, org:"rnsearch",
+    mayor:{type:"다자대결", results:{"박윤국(민주)":33.9,"백영현(국민)":29.1,"손세화":4.9,"기타":6.0,"없다":7.2,"잘모름":5.6}, parkVsBaek:{park:33.9,baek:29.1}} },
+  { id:4, num:"④", date:"03.14~15", dateSort:"2026-03-14", client:"포천좋은신문", agency:"알앤써치", label:"포천좋은신문-알앤써치", short:"포천좋은-알앤", sampleSize:503, responseRate:8.0, org:"rnsearch",
     party:{"더불어민주당":49.6,"국민의힘":33.5,"조국혁신당":1.6,"진보당":2.3,"개혁신당":1.0,"기타정당":3.1,"지지정당없음":7.5,"잘모름":1.3},
-    mayor:{type:"가상대결", sims:[{label:"박윤국 vs 백영현","박윤국(민주)":45.5,"백영현(국힘)":36.1,"없다":12.1,"잘모름":6.3}], parkVsBaek:{park:45.5,baek:36.1}} },
-  { id:5, num:"⑤", date:"2026.03.27~28", dateSort:"2026-03-27", client:"포천뉴스", agency:"리얼미터", label:"포천뉴스-리얼미터", sampleSize:1008, responseRate:8.2, org:"realmeter",
+    mayor:{type:"가상대결", sims:[{label:"박윤국 vs 백영현","박윤국(민주)":45.5,"백영현(국민)":36.1,"없다":12.1,"잘모름":6.3}], parkVsBaek:{park:45.5,baek:36.1}} },
+  { id:5, num:"⑤", date:"03.27~28", dateSort:"2026-03-27", client:"포천뉴스", agency:"리얼미터", label:"포천뉴스-리얼미터", short:"포천뉴스-리얼", sampleSize:1008, responseRate:8.2, org:"realmeter",
     party:{"더불어민주당":51.1,"국민의힘":30.7,"조국혁신당":2.4,"진보당":2.5,"개혁신당":1.4,"기타정당":1.2,"지지정당없음":9.0,"잘모름":1.5},
-    mayor:{type:"가상대결", sims:[{label:"박윤국 vs 백영현","박윤국(민주)":48.9,"백영현(국힘)":42.1,"없다":6.6,"잘모름":2.3}], parkVsBaek:{park:48.9,baek:42.1}} },
-  { id:6, num:"⑥", date:"2026.05.04~05", dateSort:"2026-05-04", client:"포천뉴스", agency:"리얼미터", label:"포천뉴스-리얼미터", sampleSize:1004, responseRate:12.2, org:"realmeter",
+    mayor:{type:"가상대결", sims:[{label:"박윤국 vs 백영현","박윤국(민주)":48.9,"백영현(국민)":42.1,"없다":6.6,"잘모름":2.3}], parkVsBaek:{park:48.9,baek:42.1}} },
+  { id:6, num:"⑥", date:"05.04~05", dateSort:"2026-05-04", client:"포천뉴스", agency:"리얼미터", label:"포천뉴스-리얼미터", short:"포천뉴스-리얼", sampleSize:1004, responseRate:12.2, org:"realmeter",
     party:{"더불어민주당":38.4,"국민의힘":41.1,"조국혁신당":3.7,"진보당":0.8,"개혁신당":4.7,"기타정당":1.4,"지지정당없음":7.3,"잘모름":2.7},
-    mayor:{type:"참고지표", note:"호감도 기준", sims:[{label:"박윤국 vs 백영현 (호감도)","박윤국(민주)":37.7,"백영현(국힘)":44.7}], parkVsBaek:{park:37.7,baek:44.7}} },
-  { id:7, num:"⑦", date:"2026.05.07~08", dateSort:"2026-05-07", client:"펜앤마이크", agency:"여론조사공정", label:"펜앤마이크-여론조사공정", sampleSize:502, responseRate:8.2, org:"others",
+    mayor:{type:"확정후보", 호감도:{"박윤국(민주)":37.7,"백영현(국민)":44.7}, 당선가능성:{"박윤국(민주)":38.6,"백영현(국민)":52.2}, results:{"박윤국(민주)":37.7,"백영현(국민)":44.7}, parkVsBaek:{park:37.7,baek:44.7}} },
+  { id:7, num:"⑦", date:"05.07~08", dateSort:"2026-05-07", client:"펜앤마이크", agency:"여론조사공정", label:"펜앤마이크-여론조사공정", short:"팬앤-공정", sampleSize:502, responseRate:8.2, org:"others",
     party:{"더불어민주당":37.0,"국민의힘":45.5,"조국혁신당":2.0,"진보당":1.9,"개혁신당":2.5,"기타정당":3.0,"지지정당없음":7.1,"잘모름":1.1},
-    mayor:{type:"확정후보", results:{"박윤국(민주)":37.4,"백영현(국힘)":52.2,"이명원":2.7,"이재수(무소속)":1.7,"기타":1.3,"없다":3.1,"잘모름":1.6}, parkVsBaek:{park:37.4,baek:52.2}} },
-  { id:8, num:"⑧", date:"2026.05.16~18", dateSort:"2026-05-16", client:"포천좋은신문", agency:"알앤써치", label:"포천좋은신문-알앤써치", sampleSize:505, responseRate:8.3, org:"rnsearch",
+    mayor:{type:"확정후보", results:{"박윤국(민주)":37.4,"백영현(국민)":52.2,"이명원":2.7,"이재수(무소속)":1.7,"기타":1.3,"없다":3.1,"잘모름":1.6}, parkVsBaek:{park:37.4,baek:52.2}} },
+  { id:8, num:"⑧", date:"05.16~18", dateSort:"2026-05-16", client:"포천좋은신문", agency:"알앤써치", label:"포천좋은신문-알앤써치", short:"포천좋은-알앤", sampleSize:505, responseRate:8.3, org:"rnsearch",
     party:{"더불어민주당":40.8,"국민의힘":35.3,"조국혁신당":2.0,"진보당":2.9,"개혁신당":2.3,"기타정당":4.4,"지지정당없음":10.8,"잘모름":1.6},
-    mayor:{type:"확정후보", results:{"박윤국(민주)":43.6,"백영현(국힘)":49.9,"이재수(무소속)":1.4,"없다":3.0,"잘모름":2.1}, parkVsBaek:{park:43.6,baek:49.9}} },
-  { id:9, num:"⑨", date:"2026.05.17~18", dateSort:"2026-05-17", client:"한길리서치", agency:"한길리서치", label:"한길리서치", sampleSize:503, responseRate:9.1, org:"others",
+    mayor:{type:"확정후보", results:{"박윤국(민주)":43.6,"백영현(국민)":49.9,"이재수(무소속)":1.4,"없다":3.0,"잘모름":2.1}, parkVsBaek:{park:43.6,baek:49.9}} },
+  { id:9, num:"⑨", date:"05.17~18", dateSort:"2026-05-17", client:"한길리서치", agency:"한길리서치", label:"한길리서치", short:"한길", sampleSize:503, responseRate:9.1, org:"others",
     party:{"더불어민주당":38.1,"국민의힘":46.2,"조국혁신당":2.3,"진보당":2.6,"개혁신당":2.4,"기타정당":1.0,"지지정당없음":5.7,"잘모름":1.8},
-    mayor:{type:"확정후보", results:{"박윤국(민주)":38.9,"백영현(국힘)":52.8,"이재수(무소속)":2.0,"없다":2.5,"잘모름":3.8}, parkVsBaek:{park:38.9,baek:52.8}} },
-  { id:10, num:"⑩", date:"2026.05.25~26", dateSort:"2026-05-25", client:"포천뉴스", agency:"리얼미터", label:"포천뉴스-리얼미터", sampleSize:1020, responseRate:12.9, org:"realmeter",
+    mayor:{type:"확정후보", results:{"박윤국(민주)":38.9,"백영현(국민)":52.8,"이재수(무소속)":2.0,"없다":2.5,"잘모름":3.8}, parkVsBaek:{park:38.9,baek:52.8}} },
+  { id:10, num:"⑩", date:"05.25~26", dateSort:"2026-05-25", client:"포천뉴스", agency:"리얼미터", label:"포천뉴스-리얼미터", short:"포천뉴스-리얼", sampleSize:1020, responseRate:12.9, org:"realmeter",
     party:{"더불어민주당":39.2,"국민의힘":41.9,"조국혁신당":3.3,"진보당":2.1,"개혁신당":1.6,"기타정당":null,"지지정당없음":9.0,"잘모름":0.9},
-    mayor:{type:"확정후보", results:{"박윤국(민주)":38.9,"백영현(국힘)":52.2,"없다+모름":1.6}, parkVsBaek:{park:38.9,baek:52.2}} }
+    mayor:{type:"확정후보", results:{"박윤국(민주)":38.9,"백영현(국민)":52.2,"손세화":1.5,"없다+모름":1.6}, parkVsBaek:{park:38.9,baek:52.2}} }
 ];
+
+// x축 레이블: 번호+약칭 (첫 항목만 2026. 붙임)
+const xLabels = SURVEYS.map((s,i) => (i===0?'2026.':'')+s.date);
+// 툴팁용 full 레이블: 날짜 · 약칭
+const xTitles = SURVEYS.map(s => `${s.sampleSize>=1000?'⬤ ':''}${s.num} 2026.${s.date}  ·  ${s.short}${s.sampleSize>=1000?'  ('+s.sampleSize.toLocaleString()+'명)':''}`);
 
 const PARTY_KEYS = ["더불어민주당","국민의힘","조국혁신당","진보당","개혁신당","기타정당"];
 const ALL_PARTY_KEYS = [...PARTY_KEYS,"지지정당없음","잘모름"];
 
-// 격차 툴팁 — 정당 (민주 vs 국힘)
-function partyTooltip() {
+// ============================================================
+// TOOLTIP HELPERS
+// ============================================================
+// 정당 툴팁: 기관명 + 민주+국힘 + 격차
+function partyTooltipCallbacks(surveysArr, labelsArr) {
   return {
-    mode:'index', intersect:false,
-    callbacks:{
-      label: c => ` ${c.dataset.label}: ${c.parsed.y!=null ? c.parsed.y+'%' : '—'}`,
-      afterBody: items => {
-        const a = items.find(i=>i.dataset.label==='더불어민주당');
-        const b = items.find(i=>i.dataset.label==='국민의힘');
-        if (a&&b&&a.parsed.y!=null&&b.parsed.y!=null) {
-          const gap = (a.parsed.y - b.parsed.y).toFixed(1);
-          const ldr = +gap>0 ? '민주 우세' : +gap<0 ? '국힘 우세' : '동률';
-          return ['─────────────', `격차  ${Math.abs(gap)}%p  (${ldr})` ];
+    callbacks: {
+      title: ctx => {
+        const s = surveysArr[ctx[0].dataIndex];
+        return s ? `${s.sampleSize>=1000?'⬤ ':''}${s.num} 2026.${s.date}  ·  ${s.short}${s.sampleSize>=1000?'  ('+s.sampleSize.toLocaleString()+'명)':''}` : (labelsArr?labelsArr[ctx[0].dataIndex]:ctx[0].label);
+      },
+      beforeBody: ctx => {
+        const s = surveysArr[ctx[0].dataIndex];
+        if (!s||!s.party) return [];
+        const 민주 = s.party["더불어민주당"]??null;
+        const 국힘 = s.party["국민의힘"]??null;
+        const lines = [];
+        if(민주!==null) lines.push(`더불어민주당: ${민주.toFixed(1)}%`);
+        if(국힘!==null) lines.push(`국민의힘: ${국힘.toFixed(1)}%`);
+        if(민주!==null&&국힘!==null){
+          const diff=Math.abs(민주-국힘).toFixed(1);
+          const leader=민주>국힘?'민주':'국민';
+          lines.push('──────────────');
+          lines.push(`격차: ${leader} +${diff}%p`);
         }
-        return [];
-      }
-    }
+        return lines;
+      },
+      label: ()=>null
+    },
+    displayColors:false
   };
 }
 
-// 격차 툴팁 — 시장 (박윤국 vs 백영현)
-function mayorTooltip() {
+// 후보 툴팁: 기관명 + 수치 + 격차
+function mayorTooltipCallbacks(surveysArr, labelsArr) {
   return {
-    mode:'index', intersect:false,
-    callbacks:{
-      label: c => ` ${c.dataset.label}: ${c.parsed.y!=null ? c.parsed.y+'%' : '—'}`,
-      afterBody: items => {
-        const a = items.find(i=>i.dataset.label?.includes('박윤국'));
-        const b = items.find(i=>i.dataset.label?.includes('백영현'));
-        if (a&&b&&a.parsed.y!=null&&b.parsed.y!=null) {
-          const gap = (a.parsed.y - b.parsed.y).toFixed(1);
-          const ldr = +gap>0 ? '박윤국 우세' : +gap<0 ? '백영현 우세' : '동률';
-          return ['─────────────', `격차  ${Math.abs(gap)}%p  (${ldr})` ];
-        }
-        return [];
-      }
-    }
+    callbacks: {
+      title: ctx => {
+        const s = surveysArr[ctx[0].dataIndex];
+        return s ? `${s.sampleSize>=1000?'⬤ ':''}${s.num} 2026.${s.date}  ·  ${s.short}${s.sampleSize>=1000?'  ('+s.sampleSize.toLocaleString()+'명)':''}` : (labelsArr?labelsArr[ctx[0].dataIndex]:ctx[0].label);
+      },
+      beforeBody: ctx => {
+        const s = surveysArr[ctx[0].dataIndex];
+        if(!s||!s.mayor?.parkVsBaek) return [];
+        const {park,baek}=s.mayor.parkVsBaek;
+        const diff=Math.abs(park-baek).toFixed(1);
+        const leader=park>baek?'박윤국':'백영현';
+        return [`박윤국(민주): ${park.toFixed(1)}%`,`백영현(국민): ${baek.toFixed(1)}%`,'──────────────',`격차: ${leader} +${diff}%p`];
+      },
+      label:()=>null
+    },
+    displayColors:false
   };
 }
 
-function mayorBadge(s) {
-  if (!s.mayor) return '';
-  const t = s.mayor.type;
-  if (t==='확정후보') return '<span class="card-badge badge-confirmed">확정후보 지지도</span>';
-  if (t==='가상대결') return '<span class="card-badge badge-virtual">가상대결</span>';
-  if (t==='다자대결') return '<span class="card-badge badge-multi">다자대결</span>';
-  if (t==='참고지표') return '<span class="card-badge badge-metric">호감도</span>';
+// ============================================================
+// BADGES & CARDS
+// ============================================================
+function mayorBadge(s){
+  const t=s.mayor?.type;
+  if(t==='확정후보') return '<span class="card-badge badge-confirmed">확정후보 지지도</span>';
+  if(t==='가상대결') return '<span class="card-badge badge-virtual">가상대결</span>';
+  if(t==='다자대결') return '<span class="card-badge badge-multi">다자대결</span>';
+  if(t==='참고지표') return '<span class="card-badge badge-metric">호감도/당선가능성</span>';
   return '';
 }
 
-function renderCard(s) {
-  return `<div class="survey-card">
+function renderCard(s){
+  const bigBadge=s.sampleSize>=1000
+    ?`<span style="display:inline-flex;align-items:center;gap:3px;background:#FEF9C3;border:1px solid #FDE047;color:#854D0E;padding:2px 7px;border-radius:10px;font-size:10px;font-weight:700">⬤ 1,000명+</span>`
+    :'';
+  const sizeStyle=s.sampleSize>=1000?'font-weight:700;color:#854D0E':'';
+  return `<div class="survey-card" style="${s.sampleSize>=1000?'border-top:3px solid #EAB308;':''}">
     <div class="card-header"><div class="card-org">${s.num} ${s.label}</div>${mayorBadge(s)}</div>
+    <div style="margin-bottom:6px">${bigBadge}</div>
     <div class="card-meta">
-      <div class="meta-item"><span class="meta-label">조사일</span><span class="meta-value">${s.date}</span></div>
+      <div class="meta-item"><span class="meta-label">조사일</span><span class="meta-value">2026.${s.date}</span></div>
       <div class="meta-item"><span class="meta-label">조사의뢰-조사기관</span><span class="meta-value">${s.client}-${s.agency}</span></div>
-      <div class="meta-item"><span class="meta-label">표본 크기</span><span class="meta-value">${s.sampleSize.toLocaleString()}명</span></div>
+      <div class="meta-item"><span class="meta-label">표본 크기</span><span class="meta-value" style="${sizeStyle}">${s.sampleSize.toLocaleString()}명</span></div>
       <div class="meta-item"><span class="meta-label">응답률</span><span class="meta-value">${s.responseRate}%</span></div>
+      <div class="meta-item"><span class="meta-label">조사방법</span><span class="meta-value">무선ARS</span></div>
     </div>
   </div>`;
 }
@@ -331,151 +597,805 @@ document.getElementById('allCards').innerHTML = SURVEYS.map(renderCard).join('')
 document.getElementById('realmeterCards').innerHTML = SURVEYS.filter(s=>s.org==='realmeter').map(renderCard).join('');
 document.getElementById('rnsearchCards').innerHTML = SURVEYS.filter(s=>s.org==='rnsearch').map(renderCard).join('');
 
-// ── 전체현황 개요 차트
-new Chart(document.getElementById('overviewChart'),{
-  type:'line',
-  data:{ labels:SURVEYS.map(s=>s.date), datasets:["더불어민주당","국민의힘"].map(k=>({label:k, data:SURVEYS.map(s=>s.party[k]??null), borderColor:PC[k], backgroundColor:PC[k]+'22', borderWidth:2.5, pointRadius:5, tension:0.3, fill:false})) },
-  options:{ responsive:true, maintainAspectRatio:false, plugins:{legend:{position:'bottom',labels:{font:{size:12},padding:14}}, tooltip:partyTooltip()}, scales:{y:{min:25,max:60,ticks:{callback:v=>v+'%'},grid:{color:'#F0F0F0'}},x:{grid:{display:false},ticks:{font:{size:10}}}} }
-});
+// ── 1000명 이상 강조 포인트 헬퍼
+function bigSamplePointRadius(surveys, baseR) {
+  return surveys.map(s => s.sampleSize >= 1000 ? baseR + 3 : baseR);
+}
+function bigSamplePointBg(surveys, color) {
+  return surveys.map(s => s.sampleSize >= 1000 ? color : '#fff');
+}
+function bigSamplePointBorder(surveys, color) {
+  return surveys.map(s => s.sampleSize >= 1000 ? color : color);
+}
 
-// ── 정당 추이 차트
+// ============================================================
+// PARTY CHARTS
+// ============================================================
 new Chart(document.getElementById('partyTrendChart'),{
   type:'line',
-  data:{ labels:SURVEYS.map(s=>s.date), datasets:PARTY_KEYS.map(k=>({label:k, data:SURVEYS.map(s=>s.party[k]??null), borderColor:PC[k], backgroundColor:PC[k]+'22', borderWidth:2, pointRadius:4, tension:0.3, fill:false})) },
-  options:{ responsive:true, maintainAspectRatio:false, plugins:{legend:{display:false}, tooltip:partyTooltip()}, scales:{y:{min:0,max:60,ticks:{callback:v=>v+'%'},grid:{color:'#F0F0F0'}},x:{grid:{display:false},ticks:{font:{size:10}}}} }
+  data:{labels:xLabels,datasets:PARTY_KEYS.map(key=>({
+    label:key,data:SURVEYS.map(s=>s.party[key]??null),
+    borderColor:PC[key],backgroundColor:PC[key]+'22',borderWidth:2,
+    pointRadius:bigSamplePointRadius(SURVEYS,4),
+    pointBackgroundColor:bigSamplePointBg(SURVEYS,PC[key]),
+    tension:0.3,fill:false
+  }))},
+  options:{responsive:true,maintainAspectRatio:false,
+    plugins:{legend:{display:false},tooltip:partyTooltipCallbacks(SURVEYS,xLabels)},
+    scales:{y:{min:0,max:60,ticks:{callback:v=>v+'%'},grid:{color:'#F0F0F0'}},x:{grid:{display:false},ticks:{font:{size:10}}}}}
 });
 const legendEl=document.getElementById('partyLegend');
 PARTY_KEYS.forEach(k=>{legendEl.innerHTML+=`<div class="legend-item"><div class="legend-dot" style="background:${PC[k]}"></div>${k}</div>`;});
 
-// ── 정당 그룹 막대
-new Chart(document.getElementById('partyGroupChart'),{
-  type:'bar',
-  data:{ labels:SURVEYS.map(s=>s.date), datasets:PARTY_KEYS.map(k=>({label:k, data:SURVEYS.map(s=>s.party[k]??0), backgroundColor:PC[k], borderRadius:3})) },
-  options:{ responsive:true, maintainAspectRatio:false, plugins:{legend:{position:'bottom',labels:{font:{size:11},padding:10}}, tooltip:partyTooltip()}, scales:{y:{ticks:{callback:v=>v+'%'},grid:{color:'#F0F0F0'}},x:{grid:{display:false},ticks:{font:{size:10}}}} }
-});
+const tHead=`<thead><tr><th>조사기관</th><th>조사일</th>${ALL_PARTY_KEYS.map(k=>`<th style="color:${PC[k]||'#fff'}">${k}</th>`).join('')}</tr></thead>`;
+const tBody='<tbody>'+SURVEYS.map((s,i)=>{
+  const 민주=s.party["더불어민주당"]??null;
+  const 국힘=s.party["국민의힘"]??null;
+  let rowBg='';
+  if(민주!==null&&국힘!==null){
+    const diff=Math.abs(민주-국힘);
+    if(민주>국힘){
+      rowBg=diff>=10?'background:#BFDBFE':diff>=5?'background:#DBEAFE':'background:#EFF6FF';
+    } else {
+      rowBg=diff>=10?'background:#FECACA':diff>=5?'background:#FEE2E2':'background:#FFF5F5';
+    }
+  }
+  return `<tr style="${rowBg}"><td>${s.sampleSize>=1000?"<span style='color:#CA8A04;font-weight:700'>⬤</span> ":""}${s.short}</td><td>${i===0?"2026.":""}${s.date}</td>${ALL_PARTY_KEYS.map(k=>`<td style="font-weight:600;color:${PC[k]||'#333'}">${s.party[k]!=null?s.party[k].toFixed(1)+'%':'—'}</td>`).join('')}</tr>`;
+}).join('')+'</tbody>';
+document.getElementById('partyTable').innerHTML=tHead+tBody;
+document.getElementById('partyTable').insertAdjacentHTML('beforebegin',
+  `<div style="display:flex;flex-wrap:wrap;gap:10px 20px;margin-bottom:10px;font-size:11px;color:#666">
+    <span style="display:flex;align-items:center;gap:5px"><span style="width:12px;height:12px;background:#EFF6FF;border-radius:2px;display:inline-block;border:1px solid #BFDBFE"></span>민주 우세 5%p 미만</span>
+    <span style="display:flex;align-items:center;gap:5px"><span style="width:12px;height:12px;background:#DBEAFE;border-radius:2px;display:inline-block;border:1px solid #93C5FD"></span>민주 우세 5~10%p</span>
+    <span style="display:flex;align-items:center;gap:5px"><span style="width:12px;height:12px;background:#BFDBFE;border-radius:2px;display:inline-block;border:1px solid #60A5FA"></span>민주 우세 10%p 이상</span>
+    <span style="display:flex;align-items:center;gap:5px"><span style="width:12px;height:12px;background:#FFF5F5;border-radius:2px;display:inline-block;border:1px solid #FECACA"></span>국민 우세 5%p 미만</span>
+    <span style="display:flex;align-items:center;gap:5px"><span style="width:12px;height:12px;background:#FEE2E2;border-radius:2px;display:inline-block;border:1px solid #FCA5A5"></span>국민 우세 5~10%p</span>
+    <span style="display:flex;align-items:center;gap:5px"><span style="width:12px;height:12px;background:#FECACA;border-radius:2px;display:inline-block;border:1px solid #F87171"></span>국민 우세 10%p 이상</span>
+  </div>`);
 
-// ── 정당 수치표
-const tH=`<thead><tr><th>조사기관</th><th>조사일</th>${ALL_PARTY_KEYS.map(k=>`<th style="color:${PC[k]||'#fff'}">${k}</th>`).join('')}</tr></thead>`;
-const tB='<tbody>'+SURVEYS.map(s=>`<tr><td>${s.client}-${s.agency}</td><td>${s.date}</td>${ALL_PARTY_KEYS.map(k=>`<td style="font-weight:600;color:${PC[k]||'#333'}">${s.party[k]!=null?s.party[k]+'%':'—'}</td>`).join('')}</tr>`).join('')+'</tbody>';
-document.getElementById('partyTable').innerHTML=tH+tB;
-
-// ── 확정후보 추이
+// ============================================================
+// MAYOR CHARTS
+// ============================================================
 const confirmed=SURVEYS.filter(s=>s.mayor?.type==='확정후보');
-new Chart(document.getElementById('mayorTrendChart'),{
-  type:'line',
-  data:{ labels:confirmed.map(s=>s.date), datasets:[
-    {label:"박윤국(민주)",data:confirmed.map(s=>s.mayor.parkVsBaek.park),borderColor:"#004EA2",backgroundColor:"#004EA233",borderWidth:2.5,pointRadius:6,tension:0.3,fill:false},
-    {label:"백영현(국힘)",data:confirmed.map(s=>s.mayor.parkVsBaek.baek),borderColor:"#C9151E",backgroundColor:"#C9151E33",borderWidth:2.5,pointRadius:6,tension:0.3,fill:false}
-  ]},
-  options:{ responsive:true, maintainAspectRatio:false, plugins:{legend:{position:'bottom',labels:{font:{size:12}}}, tooltip:mayorTooltip()}, scales:{y:{min:30,max:60,ticks:{callback:v=>v+'%'},grid:{color:'#F0F0F0'}},x:{grid:{display:false}}} }
-});
+const confirmedLabels=confirmed.map((s,i)=>i===0?'2026.'+s.date:s.date);
 
-// ── 확정후보 그룹 막대
-const mKeys=["박윤국(민주)","백영현(국힘)","이명원","이재수(무소속)","없다+모름","없다","잘모름","기타"];
-new Chart(document.getElementById('mayorGroupChart'),{
-  type:'bar',
-  data:{ labels:confirmed.map(s=>s.date), datasets:mKeys.map(k=>({label:k, data:confirmed.map(s=>s.mayor.results?.[k]??0), backgroundColor:MC[k]||"#90A4AE", borderRadius:3})) },
-  options:{ responsive:true, maintainAspectRatio:false, plugins:{legend:{position:'bottom',labels:{font:{size:11},padding:8}}, tooltip:mayorTooltip()}, scales:{y:{ticks:{callback:v=>v+'%'},grid:{color:'#F0F0F0'}},x:{grid:{display:false}}} }
-});
 
-// ── 가상대결 전체 추이
+
+
 const allPvB=SURVEYS.filter(s=>s.mayor?.parkVsBaek);
+const pvbLabels=allPvB.map((s,i)=>i===0?'2026.'+s.date:s.date);
+
+// 가상대결/참고지표 vs 확정후보 구간 분리
+const pvbTypes=allPvB.map(s=>s.mayor.type);
+// 구간 색: 가상대결=연한 황토(amber), 확정후보=연한 청록(teal) — 파란/빨간 선과 구별
+const ZONE_VIRTUAL='rgba(180,130,40,0.10)';
+const ZONE_CONFIRMED='rgba(20,160,120,0.10)';
+
+const zoneBgPlugin={
+  id:'zoneBg',
+  beforeDraw(chart){
+    const {ctx,chartArea,scales}=chart;
+    if(!chartArea) return;
+    const xScale=scales.x;
+    const types=chart.data._zoneBgTypes;
+    if(!types) return;
+    ctx.save();
+    types.forEach((type,i)=>{
+      const isVirtual=(type==='가상대결'||type==='다자대결'||type==='참고지표');
+      const color=isVirtual?ZONE_VIRTUAL:ZONE_CONFIRMED;
+      const px=xScale.getPixelForValue(i);
+      const prev=i>0?xScale.getPixelForValue(i-1):chartArea.left;
+      const next=i<types.length-1?xScale.getPixelForValue(i+1):chartArea.right;
+      const left=i===0?chartArea.left:(px+prev)/2;
+      const right=i===types.length-1?chartArea.right:(px+next)/2;
+      ctx.fillStyle=color;
+      ctx.fillRect(left,chartArea.top,right-left,chartArea.bottom-chartArea.top);
+    });
+    ctx.restore();
+  }
+};
+Chart.register(zoneBgPlugin);
+
 new Chart(document.getElementById('virtualTrendChart'),{
   type:'line',
-  data:{ labels:allPvB.map(s=>s.date), datasets:[
-    {label:"박윤국(민주)",data:allPvB.map(s=>s.mayor.parkVsBaek.park),borderColor:"#004EA2",backgroundColor:"#004EA233",borderWidth:2.5,pointRadius:5,tension:0.3,fill:false},
-    {label:"백영현(국힘)",data:allPvB.map(s=>s.mayor.parkVsBaek.baek),borderColor:"#C9151E",backgroundColor:"#C9151E33",borderWidth:2.5,pointRadius:5,tension:0.3,fill:false}
+  data:{labels:pvbLabels,_zoneBgTypes:pvbTypes,datasets:[
+    {label:"박윤국(민주)",data:allPvB.map(s=>s.mayor.parkVsBaek.park),borderColor:"#004EA2",backgroundColor:"#004EA233",borderWidth:2.5,
+      pointRadius:bigSamplePointRadius(allPvB,5),pointBackgroundColor:bigSamplePointBg(allPvB,"#004EA2"),tension:0.3,fill:false},
+    {label:"백영현(국민)",data:allPvB.map(s=>s.mayor.parkVsBaek.baek),borderColor:"#C9151E",backgroundColor:"#C9151E33",borderWidth:2.5,
+      pointRadius:bigSamplePointRadius(allPvB,5),pointBackgroundColor:bigSamplePointBg(allPvB,"#C9151E"),tension:0.3,fill:false}
   ]},
-  options:{
-    responsive:true, maintainAspectRatio:false,
-    plugins:{ legend:{position:'bottom',labels:{font:{size:12}}},
-      tooltip:{ mode:'index', intersect:false, callbacks:{
-        label: c=>` ${c.dataset.label}: ${c.parsed.y}%`,
-        afterBody: items=>{
-          const a=items.find(i=>i.dataset.label.includes('박윤국'));
-          const b=items.find(i=>i.dataset.label.includes('백영현'));
-          const lines=[];
-          if(a&&b){const gap=(a.parsed.y-b.parsed.y).toFixed(1);const ldr=+gap>0?'박윤국 우세':+gap<0?'백영현 우세':'동률';lines.push('─────────────',`격차  ${Math.abs(gap)}%p  (${ldr})`);}
-          const i=items[0]?.dataIndex;
-          if(i!=null){lines.push(`📌 ${allPvB[i].label} · ${allPvB[i].mayor.type}`);}
-          return lines;
-        }
-      }}
+  options:{responsive:true,maintainAspectRatio:false,
+    plugins:{
+      legend:{position:'bottom',labels:{font:{size:12}}},
+      tooltip:mayorTooltipCallbacks(allPvB,pvbLabels),
+      zoneBg:{}
     },
-    scales:{y:{min:25,max:60,ticks:{callback:v=>v+'%'},grid:{color:'#F0F0F0'}},x:{grid:{display:false},ticks:{font:{size:10}}}}
-  }
+    scales:{y:{min:25,max:60,ticks:{callback:v=>v+'%'},grid:{color:'#F0F0F0'}},x:{grid:{display:false},ticks:{font:{size:10}}}}},
+  _zoneBgTypes:pvbTypes
 });
 
-// ── 가상대결 막대
-function makeSimBars(d){
-  const entries=Object.entries(d).filter(([k])=>k!=='label');
-  return `<div style="margin-bottom:14px"><div style="font-weight:600;font-size:12px;color:#444;margin-bottom:6px">${d.label}</div>${entries.map(([k,v])=>`<div class="mini-bar-row"><span class="mini-bar-label">${k}</span><div class="mini-bar-track"><div class="mini-bar-fill" style="width:${v}%;background:${MC[k]||'#90A4AE'}">${v>=8?v+'%':''}</div></div><span class="mini-bar-pct">${v}%</span></div>`).join('')}</div>`;
+function makeSimBars(simData){
+  const entries=Object.entries(simData).filter(([k])=>k!=='label');
+  return `<div style="margin-bottom:14px"><div style="font-weight:600;font-size:12px;color:#444;margin-bottom:6px">${simData.label}</div>${entries.map(([k,v])=>`<div class="mini-bar-row"><span class="mini-bar-label">${k}</span><div class="mini-bar-track"><div class="mini-bar-fill" style="width:${v}%;background:${MC[k]||'#90A4AE'}">${v>=8?v+'%':''}</div></div><span class="mini-bar-pct">${v}%</span></div>`).join('')}</div>`;
 }
-const simC=document.getElementById('simBarsContainer');
-SURVEYS.filter(s=>s.mayor?.sims).forEach(s=>{
-  const c=document.createElement('div'); c.className='chart-card';
-  c.innerHTML=`<div class="chart-title">${s.label} · ${s.date}</div><div class="chart-sub">유형: ${s.mayor.type} · 단위: %</div>${s.mayor.sims.map(makeSimBars).join('')}`;
-  simC.appendChild(c);
-});
 
-// ── 시장 수치표
-const mTH=`<thead><tr><th>조사기관</th><th>조사일</th><th>유형</th><th style="color:#4F9EFF">박윤국(민주)</th><th style="color:#FF6B6B">백영현(국힘)</th><th>격차</th><th>비고</th></tr></thead>`;
-const mTB='<tbody>'+SURVEYS.filter(s=>s.mayor).map(s=>{
-  const m=s.mayor, pvb=m.parkVsBaek;
-  const gap=pvb?Math.abs(pvb.park-pvb.baek).toFixed(1):null;
-  const ldr=pvb?(pvb.park>pvb.baek?'박윤국 우세':'백영현 우세'):null;
-  let note='';
-  if(m.type==='확정후보'&&m.results) note=Object.entries(m.results).filter(([k])=>!["박윤국(민주)","백영현(국힘)"].includes(k)).map(([k,v])=>`${k} ${v}%`).join(', ');
-  else if(m.type==='다자대결') note='5인 다자대결';
-  else if(m.type==='참고지표') note='호감도 기준 수치';
-  return `<tr><td>${s.client}-${s.agency}</td><td>${s.date}</td><td>${m.type}</td><td style="color:#004EA2;font-weight:700">${pvb?pvb.park+'%':'—'}</td><td style="color:#C9151E;font-weight:700">${pvb?pvb.baek+'%':'—'}</td><td style="font-weight:600">${gap?gap+'%p ('+ldr+')':'—'}</td><td style="font-size:11px;color:#666">${note}</td></tr>`;
-}).join('')+'</tbody>';
-document.getElementById('mayorTable').innerHTML=mTH+mTB;
+// ---- 가상대결 수치표 ----
+(()=>{
+  const allPvBSurveys = SURVEYS.filter(s=>s.mayor?.parkVsBaek);
+  const tH=`<thead><tr><th>조사기관</th><th>조사일</th><th>유형</th><th style="color:#4F9EFF">박윤국(민주)</th><th style="color:#FF6B6B">백영현(국민)</th><th>격차</th></tr></thead>`;
+  const tB='<tbody>'+allPvBSurveys.map((s,i)=>{
+    const {park,baek}=s.mayor.parkVsBaek;
+    const diff=(park-baek).toFixed(1);
+    const bg=parseFloat(diff)>0?'background:#EFF6FF':'background:#FFF5F5';
+    const diffTxt=parseFloat(diff)>0?`민주 +${diff}%p`:`국민 +${Math.abs(parseFloat(diff)).toFixed(1)}%p`;
+    const isV=(s.mayor.type==='가상대결'||s.mayor.type==='다자대결');
+    const badge=isV
+      ?`<span style="background:#FEF3C7;color:#92400E;padding:2px 6px;border-radius:8px;font-size:10px">${s.mayor.type}</span>`
+      :`<span style="background:#D1FAE5;color:#065F46;padding:2px 6px;border-radius:8px;font-size:10px">${s.mayor.type}</span>`;
+    const bigMark=s.sampleSize>=1000?'<span style="color:#CA8A04;font-weight:700">⬤</span> ':'';
+    return `<tr style="${bg}">
+      <td>${bigMark}${s.short}</td><td>${i===0?"2026.":""}${s.date}</td><td>${badge}</td>
+      <td style="color:#004EA2;font-weight:700">${park.toFixed(1)}%</td>
+      <td style="color:#C9151E;font-weight:700">${baek.toFixed(1)}%</td>
+      <td style="font-weight:600">${diffTxt}</td></tr>`;
+  }).join('')+'</tbody>';
+  document.getElementById('virtualTable').innerHTML=tH+tB;
+})();
 
-// ── 리얼미터 탭
+
+
+
+// ============================================================
+// 연령별 데이터
+// ============================================================
+const AGE_LABELS = ['18~29세','30대','40대','50대','60대','70세+'];
+// 연령대별 색상: 보라·파랑·초록·황·빨강·회색
+const AGE_COLORS  = ['#7C3AED','#2563EB','#059669','#D97706','#DC2626','#6B7280'];
+const AGE_EMOJIS  = ['🧑','👨','🧔','🧓','👴','🏛️'];
+
+const AGE_DATA = [
+  { num:'①', date:'01.30~31', short:'포천일보-뷰', n:1000,
+    party: { 민주:[37.9,39.2,52.6,55.2,42.2,26.6], 국힘:[26.3,32.9,29.3,24.3,37.7,57.0] },
+    mayor: { park:[34.6,33.8,47.6,57.9,44.9,30.1], baek:[43.9,49.7,40.3,29.5,46.2,59.6] }
+  },
+  { num:'②', date:'02.06~07', short:'포천뉴스-리얼', n:1001,
+    party: { 민주:[24.8,28.4,55.7,53.7,36.9,27.6], 국힘:[34.6,29.3,19.9,27.0,39.8,50.9] },
+    mayor: { park:[26.2,34.5,51.8,49.1,42.6,30.6], baek:[43.4,45.6,34.2,38.1,47.2,52.4] }
+  },
+  { num:'③', date:'02.27~28', short:'중부-데일리', n:700,
+    party: { 민주:[41.7,39.5,43.8,65.9,54.3,37.3], 국힘:[43.7,44.8,40.9,23.6,35.6,49.4] },
+    mayor: { park:[30.5,27.1,31.7,38.5,34.2,36.2], baek:[19.2,38.5,36.4,23.0,30.3,30.5] }
+  },
+  { num:'④', date:'03.14~15', short:'포천좋은-알앤', n:503,
+    party: { 민주:[44.1,35.7,68.1,56.0,52.7,39.1], 국힘:[32.7,40.9,19.5,30.3,30.2,46.0] },
+    mayor: { park:[43.9,44.1,58.2,49.9,50.0,null], baek:[36.0,33.2,23.6,35.9,30.9,null] }
+  },
+  { num:'⑤', date:'03.27~28', short:'포천뉴스-리얼', n:1008,
+    party: { 민주:[28.2,43.1,63.6,63.8,52.0,48.1], 국힘:[37.0,30.6,18.6,21.0,33.6,40.7] },
+    mayor: { park:[32.3,38.4,56.4,64.1,46.3,48.2], baek:[49.6,46.8,36.7,29.1,47.9,44.7] }
+  },
+  { num:'⑥', date:'05.04~05', short:'포천뉴스-리얼', n:1004,
+    party: { 민주:[35.2,34.3,58.8,53.8,39.3,26.6], 국힘:[33.1,44.6,23.9,32.9,46.0,57.0] },
+    mayor: { park:[26.5,31.9,52.1,47.2,38.6,33.3], baek:[54.4,59.3,38.6,42.3,56.7,59.5] }
+  },
+  { num:'⑦', date:'05.07~08', short:'팬앤-공정', n:502,
+    party: { 민주:[27.3,23.4,45.6,42.3,38.5,37.9], 국힘:[52.2,52.7,34.4,35.6,48.4,50.4] },
+    mayor: { park:[31.5,31.0,33.7,50.6,34.5,37.0], baek:[54.6,54.6,54.5,39.1,57.7,54.8] }
+  },
+  { num:'⑧', date:'05.16~18', short:'포천좋은-알앤', n:505,
+    party: { 민주:[35.0,37.1,40.8,53.2,36.9,38.5], 국힘:[27.4,45.4,28.8,21.4,43.8,42.4] },
+    mayor: { park:[47.6,27.3,50.7,51.1,41.7,40.7], baek:[48.2,62.4,44.0,43.4,50.4,53.8] }
+  },
+  { num:'⑨', date:'05.17~18', short:'한길', n:503,
+    party: { 민주:[39.9,22.3,62.9,46.7,31.7,29.8], 국힘:[34.7,47.7,26.7,36.0,56.5,61.9] },
+    mayor: { park:[38.3,30.6,53.8,44.9,37.6,30.6], baek:[56.9,54.5,44.2,44.5,52.6,63.0] }
+  },
+  { num:'⑩', date:'05.25~26', short:'포천뉴스-리얼', n:1020,
+    party: { 민주:[33.7,33.5,51.2,49.0,41.0,26.4], 국힘:[41.6,42.5,27.6,32.7,41.9,59.6] },
+    mayor: { park:[36.9,31.1,43.2,50.5,41.7,29.6], baek:[46.6,57.2,44.3,45.7,52.1,64.6] }
+  }
+];
+
+const AGE_XLABELS = AGE_DATA.map((d,i)=>(i===0?'2026.':'')+d.date);
+
+// ---- 연령대 선택 버튼 구성 ----
+let currentAgeIdx = 0;
+let ageChartInst = null;
+let ageMayorChartInst = null;
+
+function buildAgeBtns(){
+  const c = document.getElementById('ageBtns');
+  c.innerHTML = '';
+  AGE_LABELS.forEach((label, ai)=>{
+    const isActive = ai === currentAgeIdx;
+    const color = AGE_COLORS[ai];
+    const btn = document.createElement('div');
+    btn.style.cssText = [
+      'background:'+(isActive?color+'22':'#fff'),
+      'border:2px solid '+(isActive?color:'#E5E7EB'),
+      'border-radius:12px',
+      'padding:14px 10px',
+      'text-align:center',
+      'cursor:pointer',
+      'user-select:none'
+    ].join(';');
+    btn.innerHTML = `<div style="font-size:22px;margin-bottom:4px">${AGE_EMOJIS[ai]}</div>`+
+      `<div style="font-size:13px;font-weight:700;color:${isActive?color:'#374151'}">${label}</div>`;
+    btn.onclick = ()=>{ currentAgeIdx = ai; buildAgeBtns(); renderAgeChart(); };
+    c.appendChild(btn);
+  });
+}
+
+function renderAgeChart(){
+  const ai = currentAgeIdx;
+  const label = AGE_LABELS[ai];
+  document.getElementById('ageChartTitle').textContent = label + ' — 정당 지지도 추이';
+  document.getElementById('ageMayorChartTitle').textContent = label + ' — 지선 지지도 추이';
+
+  const partyM = AGE_DATA.map(d=>d.party.민주[ai]);
+  const partyN = AGE_DATA.map(d=>d.party.국힘[ai]);
+  const mayorP = AGE_DATA.map(d=>d.mayor.park[ai]);
+  const mayorB = AGE_DATA.map(d=>d.mayor.baek[ai]);
+  const pR   = AGE_DATA.map(d=>d.n>=1000?7:4);
+  const pBgM = AGE_DATA.map(d=>d.n>=1000?'#004EA2':'#fff');
+  const pBgN = AGE_DATA.map(d=>d.n>=1000?'#C9151E':'#fff');
+
+  const tooltipTitle = ctx=>{const d=AGE_DATA[ctx[0].dataIndex];return`${d.n>=1000?'⬤ ':''}${d.num} 2026.${d.date}  ·  ${d.short}${d.n>=1000?'  ('+d.n.toLocaleString()+'명)':''}`;};
+  const commonScales = {y:{min:10,max:75,ticks:{callback:v=>v+'%'},grid:{color:'#F0F0F0'}},x:{grid:{display:false},ticks:{font:{size:10}}}};
+
+  // 정당 지지도
+  if(ageChartInst) ageChartInst.destroy();
+  ageChartInst = new Chart(document.getElementById('agePartyChart'),{
+    type:'line',
+    data:{labels:AGE_XLABELS, datasets:[
+      {label:'더불어민주당',data:partyM,borderColor:'#004EA2',backgroundColor:'#004EA222',borderWidth:2.5,pointRadius:pR,pointBackgroundColor:pBgM,tension:0.3,fill:false},
+      {label:'국민의힘',data:partyN,borderColor:'#C9151E',backgroundColor:'#C9151E22',borderWidth:2.5,pointRadius:pR,pointBackgroundColor:pBgN,tension:0.3,fill:false}
+    ]},
+    options:{responsive:true,maintainAspectRatio:false,
+      plugins:{legend:{display:false},
+        tooltip:{callbacks:{title:tooltipTitle,
+          beforeBody:ctx=>{const i=ctx[0].dataIndex;const m=partyM[i],n=partyN[i];if(m==null&&n==null)return[];
+            const lines=[];if(m!=null)lines.push(`더불어민주당: ${m.toFixed(1)}%`);if(n!=null)lines.push(`국민의힘: ${n.toFixed(1)}%`);
+            if(m!=null&&n!=null)lines.push(`격차: ${m>n?'민주':'국민'} +${Math.abs(m-n).toFixed(1)}%p`);return lines;},label:()=>null},displayColors:false}},
+      scales:commonScales}
+  });
+
+  // 지선 지지도
+  if(ageMayorChartInst) ageMayorChartInst.destroy();
+  ageMayorChartInst = new Chart(document.getElementById('ageMayorChart'),{
+    type:'line',
+    data:{labels:AGE_XLABELS, datasets:[
+      {label:'박윤국(민주)',data:mayorP,borderColor:'#004EA2',backgroundColor:'#004EA222',borderWidth:2.5,pointRadius:pR,pointBackgroundColor:pBgM,tension:0.3,fill:false,spanGaps:true},
+      {label:'백영현(국민)',data:mayorB,borderColor:'#C9151E',backgroundColor:'#C9151E22',borderWidth:2.5,pointRadius:pR,pointBackgroundColor:pBgN,tension:0.3,fill:false,spanGaps:true}
+    ]},
+    options:{responsive:true,maintainAspectRatio:false,
+      plugins:{legend:{display:false},
+        tooltip:{callbacks:{title:tooltipTitle,
+          beforeBody:ctx=>{const i=ctx[0].dataIndex;const p=mayorP[i],b=mayorB[i];if(p==null&&b==null)return[];
+            const lines=[];if(p!=null)lines.push(`박윤국(민주): ${p.toFixed(1)}%`);if(b!=null)lines.push(`백영현(국민): ${b.toFixed(1)}%`);
+            if(p!=null&&b!=null)lines.push(`격차: ${p>b?'박윤국':'백영현'} +${Math.abs(p-b).toFixed(1)}%p`);return lines;},label:()=>null},displayColors:false}},
+      scales:commonScales}
+  });
+}
+
+buildAgeBtns();
+renderAgeChart();
+
+
+
+// ============================================================
 const rmData=SURVEYS.filter(s=>s.org==='realmeter');
+const rmLabels=rmData.map((s,i)=>i===0?'2026.'+s.date:s.date);
+const rmLeg=document.getElementById('rmPartyLegend');
+
 new Chart(document.getElementById('rmPartyChart'),{
   type:'line',
-  data:{ labels:rmData.map(s=>s.date), datasets:PARTY_KEYS.map(k=>({label:k, data:rmData.map(s=>s.party[k]??null), borderColor:PC[k], backgroundColor:PC[k]+'22', borderWidth:2, pointRadius:5, tension:0.3, fill:false})) },
-  options:{ responsive:true, maintainAspectRatio:false, plugins:{legend:{display:false}, tooltip:partyTooltip()}, scales:{y:{min:0,max:60,ticks:{callback:v=>v+'%'},grid:{color:'#F0F0F0'}},x:{grid:{display:false}}} }
+  data:{labels:rmLabels,datasets:PARTY_KEYS.map(key=>({label:key,data:rmData.map(s=>s.party[key]??null),borderColor:PC[key],backgroundColor:PC[key]+'22',borderWidth:2,pointRadius:bigSamplePointRadius(rmData,5),pointBackgroundColor:bigSamplePointBg(rmData,PC[key]),tension:0.3,fill:false}))},
+  options:{responsive:true,maintainAspectRatio:false,
+    plugins:{legend:{display:false},tooltip:partyTooltipCallbacks(rmData,rmLabels)},
+    scales:{y:{min:0,max:60,ticks:{callback:v=>v+'%'},grid:{color:'#F0F0F0'}},x:{grid:{display:false}}}}
 });
-const rmL=document.getElementById('rmPartyLegend');
-PARTY_KEYS.forEach(k=>{rmL.innerHTML+=`<div class="legend-item"><div class="legend-dot" style="background:${PC[k]}"></div>${k}</div>`;});
+PARTY_KEYS.forEach(k=>{rmLeg.innerHTML+=`<div class="legend-item"><div class="legend-dot" style="background:${PC[k]}"></div>${k}</div>`;});
 
 new Chart(document.getElementById('rmMayorChart'),{
   type:'bar',
-  data:{ labels:rmData.map(s=>s.date), datasets:[
-    {label:"박윤국(민주)", data:rmData.map(s=>s.mayor?.parkVsBaek?.park??0), backgroundColor:"#004EA2", borderRadius:4},
-    {label:"백영현(국힘)", data:rmData.map(s=>s.mayor?.parkVsBaek?.baek??0), backgroundColor:"#C9151E", borderRadius:4}
+  data:{labels:rmLabels,_zoneBgTypes:rmData.map(s=>s.mayor?.type||'가상대결'),datasets:[
+    {label:"박윤국(민주)",data:rmData.map(s=>s.mayor?.parkVsBaek?.park??0),backgroundColor:"#004EA2",borderRadius:4},
+    {label:"백영현(국민)",data:rmData.map(s=>s.mayor?.parkVsBaek?.baek??0),backgroundColor:"#C9151E",borderRadius:4}
   ]},
-  options:{ responsive:true, maintainAspectRatio:false, plugins:{legend:{position:'bottom',labels:{font:{size:12}}}, tooltip:mayorTooltip()}, scales:{y:{min:0,max:60,ticks:{callback:v=>v+'%'},grid:{color:'#F0F0F0'}},x:{grid:{display:false}}} }
+  options:{responsive:true,maintainAspectRatio:false,
+    plugins:{legend:{position:'bottom',labels:{font:{size:12}}},tooltip:mayorTooltipCallbacks(rmData,rmLabels),zoneBg:{}},
+    scales:{y:{min:0,max:60,ticks:{callback:v=>v+'%'},grid:{color:'#F0F0F0'}},x:{grid:{display:false}}}}
 });
+document.getElementById('rmMayorChart').closest('.chart-card').insertAdjacentHTML('beforeend',
+  `<div style="display:flex;gap:16px;margin-top:10px;font-size:11px;color:#666">
+    <span style="display:flex;align-items:center;gap:5px"><span style="width:12px;height:12px;background:rgba(180,130,40,0.25);border-radius:2px;display:inline-block;border:1px solid rgba(180,130,40,0.5)"></span>후보 확정 전</span>
+    <span style="display:flex;align-items:center;gap:5px"><span style="width:12px;height:12px;background:rgba(20,160,120,0.25);border-radius:2px;display:inline-block;border:1px solid rgba(20,160,120,0.5)"></span>후보 확정 후</span>
+  </div>`);
 
-// ── 알앤써치 탭
+// ============================================================
+// 포천좋은신문-알앤써치 CHARTS
+// ============================================================
 const rnsData=SURVEYS.filter(s=>s.org==='rnsearch');
+const rnsLabels=rnsData.map((s,i)=>i===0?'2026.'+s.date:s.date);
+
 new Chart(document.getElementById('rnsPartyChart'),{
   type:'bar',
-  data:{ labels:rnsData.map(s=>s.date), datasets:PARTY_KEYS.map(k=>({label:k, data:rnsData.map(s=>s.party[k]??0), backgroundColor:PC[k], borderRadius:4})) },
-  options:{ responsive:true, maintainAspectRatio:false, plugins:{legend:{position:'bottom',labels:{font:{size:12}}}, tooltip:partyTooltip()}, scales:{y:{ticks:{callback:v=>v+'%'},grid:{color:'#F0F0F0'}},x:{grid:{display:false}}} }
+  data:{labels:rnsLabels,datasets:PARTY_KEYS.map(key=>({label:key,data:rnsData.map(s=>s.party[key]??0),backgroundColor:PC[key],borderRadius:4}))},
+  options:{responsive:true,maintainAspectRatio:false,
+    plugins:{legend:{position:'bottom',labels:{font:{size:12}}},tooltip:partyTooltipCallbacks(rnsData,rnsLabels)},
+    scales:{y:{ticks:{callback:v=>v+'%'},grid:{color:'#F0F0F0'}},x:{grid:{display:false}}}}
 });
 
 new Chart(document.getElementById('rnsMayorChart'),{
   type:'bar',
-  data:{ labels:rnsData.map(s=>s.date), datasets:[
-    {label:"박윤국(민주)", data:rnsData.map(s=>s.mayor?.parkVsBaek?.park??0), backgroundColor:"#004EA2", borderRadius:4},
-    {label:"백영현(국힘)", data:rnsData.map(s=>s.mayor?.parkVsBaek?.baek??0), backgroundColor:"#C9151E", borderRadius:4}
+  data:{labels:rnsLabels,_zoneBgTypes:rnsData.map(s=>s.mayor?.type||'가상대결'),datasets:[
+    {label:"박윤국(민주)",data:rnsData.map(s=>s.mayor?.parkVsBaek?.park??0),backgroundColor:"#004EA2",borderRadius:4},
+    {label:"백영현(국민)",data:rnsData.map(s=>s.mayor?.parkVsBaek?.baek??0),backgroundColor:"#C9151E",borderRadius:4}
   ]},
-  options:{ responsive:true, maintainAspectRatio:false, plugins:{legend:{position:'bottom',labels:{font:{size:12}}}, tooltip:mayorTooltip()}, scales:{y:{min:0,max:60,ticks:{callback:v=>v+'%'},grid:{color:'#F0F0F0'}},x:{grid:{display:false}}} }
+  options:{responsive:true,maintainAspectRatio:false,
+    plugins:{legend:{position:'bottom',labels:{font:{size:12}}},tooltip:mayorTooltipCallbacks(rnsData,rnsLabels),zoneBg:{}},
+    scales:{y:{min:0,max:60,ticks:{callback:v=>v+'%'},grid:{color:'#F0F0F0'}},x:{grid:{display:false}}}}
+});
+document.getElementById('rnsMayorChart').closest('.chart-card').insertAdjacentHTML('beforeend',
+  `<div style="display:flex;gap:16px;margin-top:10px;font-size:11px;color:#666">
+    <span style="display:flex;align-items:center;gap:5px"><span style="width:12px;height:12px;background:rgba(180,130,40,0.25);border-radius:2px;display:inline-block;border:1px solid rgba(180,130,40,0.5)"></span>후보 확정 전</span>
+    <span style="display:flex;align-items:center;gap:5px"><span style="width:12px;height:12px;background:rgba(20,160,120,0.25);border-radius:2px;display:inline-block;border:1px solid rgba(20,160,120,0.5)"></span>후보 확정 후</span>
+  </div>`);
+
+// ============================================================
+// NAV
+// ============================================================
+// 리얼미터 선거구별 차트는 DIST_DATA 로드 후 초기화 필요 — defer 처리
+// 알앤써치 선거구별 차트도 동일
+// → DIST_DATA 정의 후 아래에서 초기화
+
+// ============================================================
+// 선거구별 데이터
+// ============================================================
+// 지역 구분: A=포천·선단동, B=군내·신북 등 (1선거구), C=소흘읍, D=내촌·가산 등 (2선거구)
+// party: {d1:{민주,국힘}, d2:{민주,국힘}} — 선거구별 정당지지도
+// mayor: {d1:{park,baek}, d2:{park,baek}, A:{park,baek}, B:{park,baek}, C:{park,baek}, D:{park,baek}}
+
+const DIST_DATA = [
+  // ① 포천일보 01.30~31: 정당지지도 4권역 있음, 후보 4권역 있음
+  // 포천일보 기준: 1권역=B(군내등), 2권역=A(포천·선단), 3권역=C(소흘), 4권역=D(내촌등)
+  { date:"01.30~31", sampleSize:1000, label:"포천일보", short:"포천일보-뷰", type:"가상대결",
+    party: {
+      d1:{민주:(44.8+40.5)/2, 국힘:(34.8+36.4)/2},
+      d2:{민주:(47.5+39.4)/2, 국힘:(28.8+39.4)/2},
+      A:{민주:40.5,국힘:36.4}, B:{민주:44.8,국힘:34.8},
+      C:{민주:47.5,국힘:28.8}, D:{민주:39.4,국힘:39.4}
+    },
+    mayor: { d1:{park:40.5,baek:45.3}, d2:{park:44.4,baek:44.3}, A:{park:40.2,baek:46.3}, B:{park:40.9,baek:44.1}, C:{park:45.9,baek:40.1}, D:{park:42.3,baek:50.3} }
+  },
+  // ② 리얼미터 02.06~07: 정당+후보 4분할 (가1=포천·선단=A, 가2=군내등=B, 나1=소흘=C, 나2=내촌등=D)
+  { date:"02.06~07", sampleSize:1001, label:"포천뉴스-리얼미터", short:"포천뉴스-리얼", type:"가상대결",
+    party: { d1:{민주:(41.4+35.6)/2, 국힘:(32.4+38.4)/2}, d2:{민주:(43.0+31.6)/2, 국힘:(31.5+39.3)/2},
+             A:{민주:41.4,국힘:32.4}, B:{민주:35.6,국힘:38.4}, C:{민주:43.0,국힘:31.5}, D:{민주:31.6,국힘:39.3} },
+    mayor: { d1:{park:(39.3+41.7)/2,baek:(46.9+41.8)/2}, d2:{park:(40.2+37.2)/2,baek:(41.0+48.4)/2},
+             A:{park:39.3,baek:46.9}, B:{park:41.7,baek:41.8}, C:{park:40.2,baek:41.0}, D:{park:37.2,baek:48.4} }
+  },
+  // ③ 데일리리서치 02.27~28: 가/나 2분할만
+  { date:"02.27~28", sampleSize:700, label:"중부-데일리리서치", short:"중부-데일리", type:"다자대결",
+    party: { d1:{민주:52.4,국힘:35.7}, d2:{민주:45.4,국힘:41.3}, A:null, B:null, C:null, D:null },
+    mayor: { d1:{park:31.9,baek:28.7}, d2:{park:35.9,baek:29.5}, A:null, B:null, C:null, D:null }
+  },
+  // ④ 알앤써치 03.14~15: 정당+후보 1/2선거구 (PDF 7페이지)
+  { date:"03.14~15", sampleSize:503, label:"포천좋은-알앤써치", short:"포천좋은-알앤", type:"가상대결",
+    party: { d1:{민주:49.6,국힘:34.1}, d2:{민주:49.6,국힘:32.9}, A:null, B:null, C:null, D:null },
+    mayor: { d1:{park:45.6,baek:33.9}, d2:{park:45.4,baek:38.3}, A:null, B:null, C:null, D:null }
+  },
+  // ⑤ 리얼미터 03.27~28: 정당+후보 가/나 + 상세지역(4권역)
+  { date:"03.27~28", sampleSize:1008, label:"포천뉴스-리얼미터", short:"포천뉴스-리얼", type:"가상대결",
+    party: {
+      d1:{민주:52.5,국힘:29.1}, d2:{민주:49.6,국힘:32.3},
+      A:{민주:53.6,국힘:29.5}, B:{민주:51.5,국힘:28.7},
+      C:{민주:48.8,국힘:32.1}, D:{민주:50.9,국힘:32.6}
+    },
+    mayor: {
+      d1:{park:50.5,baek:39.8}, d2:{park:47.3,baek:44.5},
+      A:{park:49.8,baek:39.9}, B:{park:51.1,baek:39.8},
+      C:{park:46.5,baek:45.6}, D:{park:48.5,baek:42.7}
+    }
+  },
+  // ⑥ 리얼미터 05.04~05: 정당+후보 1/2선거구+4권역 (호감도 기준, PDF p.17/p.20)
+  { date:"05.04~05", sampleSize:1004, label:"포천뉴스-리얼미터", short:"포천뉴스-리얼", type:"확정후보",
+    party: {
+      d1:{민주:39.7,국힘:44.6}, d2:{민주:42.3,국힘:37.6},
+      A:{민주:36.3,국힘:47.4}, B:{민주:42.8,국힘:42.1},
+      C:{민주:45.5,국힘:34.7}, D:{민주:37.6,국힘:41.8}
+    },
+    mayor: {
+      d1:{park:37.0,baek:54.3}, d2:{park:40.3,baek:50.0},
+      A:{park:34.7,baek:58.2}, B:{park:39.1,baek:50.9},
+      C:{park:41.5,baek:48.8}, D:{park:38.5,baek:51.7}
+    }
+  },
+  // ⑦ 펜앤마이크 05.07~08: 정당+후보 1/2선거구 모두 있음
+  { date:"05.07~08", sampleSize:502, label:"펜앤마이크-여론조사공정", short:"팬앤-공정", type:"확정후보",
+    party: { d1:{민주:38.5,국힘:44.6}, d2:{민주:35.5,국힘:46.3}, A:null, B:null, C:null, D:null },
+    mayor: { d1:{park:39.4,baek:53.2}, d2:{park:35.4,baek:51.2}, A:null, B:null, C:null, D:null }
+  },
+  // ⑧ 알앤써치 05.16~18: 정당 4권역 있음, 후보 4권역 있음
+  { date:"05.16~18", sampleSize:505, label:"포천좋은-알앤써치", short:"포천좋은-알앤", type:"확정후보",
+    party: { d1:{민주:(39.8+41.9)/2,국힘:(40.5+34.1)/2}, d2:{민주:(43.9+38.7)/2,국힘:(36.2+31.0)/2},
+             A:{민주:41.9,국힘:34.1}, B:{민주:39.8,국힘:40.5}, C:{민주:38.7,국힘:31.0}, D:{민주:43.9,국힘:36.2} },
+    mayor: { d1:{park:(46.7+40.8)/2,baek:(46.0+54.6)/2}, d2:{park:(45.7+41.8)/2,baek:(47.6+51.3)/2},
+             A:{park:40.8,baek:54.6}, B:{park:46.7,baek:46.0}, C:{park:41.8,baek:51.3}, D:{park:45.7,baek:47.6} }
+  },
+  // ⑨ 한길리서치 05.17~18: 1권역/2권역 후보, 정당
+  { date:"05.17~18", sampleSize:503, label:"한길리서치", short:"한길", type:"확정후보",
+    party: { d1:{민주:40.7,국힘:45.9}, d2:{민주:35.4,국힘:46.5}, A:null, B:null, C:null, D:null },
+    mayor: { d1:{park:39.1,baek:54.2}, d2:{park:38.8,baek:51.4}, A:null, B:null, C:null, D:null }
+  },
+  // ⑩ 리얼미터 05.25~26: 정당+후보 1/2선거구 + 상세지역(4권역) 모두 있음
+  { date:"05.25~26", sampleSize:1020, label:"포천뉴스-리얼미터", short:"포천뉴스-리얼", type:"확정후보",
+    party: {
+      d1:{민주:39.0,국힘:41.6}, d2:{민주:39.3,국힘:42.1},
+      A:{민주:40.1,국힘:43.4}, B:{민주:38.1,국힘:40.0},
+      C:{민주:41.7,국힘:39.8}, D:{민주:35.9,국힘:45.5}
+    },
+    mayor: {
+      d1:{park:36.2,baek:55.4}, d2:{park:42.7,baek:49.0},
+      A:{park:30.8,baek:60.4}, B:{park:41.0,baek:50.9},
+      C:{park:45.0,baek:45.8}, D:{park:39.5,baek:53.7}
+    }
+  }
+];
+
+// x축 레이블 — 첫 항목만 2026. 붙임
+const DIST_LABELS = DIST_DATA.map((d,i)=>i===0?'2026.'+d.date:d.date);
+
+// 정당지지도 보유 조사만
+const dPartyData = DIST_DATA.filter(d=>d.party!==null);
+const dPartyLabels = dPartyData.map((d,i)=>i===0?'2026.'+d.date:d.date);
+
+// 후보 지지도 보유 조사만
+const dMayorData = DIST_DATA.filter(d=>d.mayor!==null);
+const dMayorLabels = dMayorData.map((d,i)=>i===0?'2026.'+d.date:d.date);
+const dMayorTypes = dMayorData.map(d=>d.type);
+
+// 리얼미터 조사 중 선거구별 데이터 있는 것만
+const rmDistData = DIST_DATA.filter(d=>d.label.includes('리얼미터') && (d.party?.d1 || d.mayor?.d1));
+const rmDistLabels = rmDistData.map((d,i)=>i===0?'2026.'+d.date:d.date);
+const rmDistTypes = rmDistData.map(d=>d.type);
+
+// 리얼미터 선거구별 정당지지도 + 후보지지도
+(()=>{
+  new Chart(document.getElementById('rmDistPartyChart'),{
+    type:'line',
+    data:{labels:rmDistLabels,datasets:[
+      {label:"민주 1선",data:rmDistData.map(d=>d.party?.d1?.민주??null),borderColor:"#004EA2",borderWidth:2.5,
+      pointRadius:bigSamplePointRadius(rmDistData,5),pointBackgroundColor:bigSamplePointBg(rmDistData,"#004EA2"),tension:0.3,fill:false,borderDash:[]},
+      {label:"민주 2선",data:rmDistData.map(d=>d.party?.d2?.민주??null),borderColor:"#004EA2",borderWidth:2,
+      pointRadius:bigSamplePointRadius(rmDistData,4),pointBackgroundColor:bigSamplePointBg(rmDistData,"#004EA2"),tension:0.3,fill:false,borderDash:[6,3]},
+      {label:"국민 1선",data:rmDistData.map(d=>d.party?.d1?.국힘??null),borderColor:"#C9151E",borderWidth:2.5,
+      pointRadius:bigSamplePointRadius(rmDistData,5),pointBackgroundColor:bigSamplePointBg(rmDistData,"#C9151E"),tension:0.3,fill:false,borderDash:[]},
+      {label:"국민 2선",data:rmDistData.map(d=>d.party?.d2?.국힘??null),borderColor:"#C9151E",borderWidth:2,
+      pointRadius:bigSamplePointRadius(rmDistData,4),pointBackgroundColor:bigSamplePointBg(rmDistData,"#C9151E"),tension:0.3,fill:false,borderDash:[6,3]}
+    ]},
+    options:{responsive:true,maintainAspectRatio:false,
+      plugins:{legend:{display:false},
+        tooltip:{callbacks:{title:ctx=>rmDistLabels[ctx[0].dataIndex],
+          beforeBody:ctx=>{const i=ctx[0].dataIndex;const d=rmDistData[i];const lines=[];
+            const m1=d.party?.d1?.민주,m2=d.party?.d2?.민주,n1=d.party?.d1?.국힘,n2=d.party?.d2?.국힘;
+            if(m1!=null)lines.push(`민주 1선: ${m1.toFixed(1)}%`);
+            if(m2!=null)lines.push(`민주 2선: ${m2.toFixed(1)}%`);
+            if(m1!=null&&m2!=null)lines.push(`  차이: ${Math.abs(m1-m2).toFixed(1)}%p`);
+            lines.push('──────────────');
+            if(n1!=null)lines.push(`국민 1선: ${n1.toFixed(1)}%`);
+            if(n2!=null)lines.push(`국민 2선: ${n2.toFixed(1)}%`);
+            if(n1!=null&&n2!=null)lines.push(`  차이: ${Math.abs(n1-n2).toFixed(1)}%p`);
+            return lines;},label:()=>null},displayColors:false}},
+      scales:{y:{min:20,max:65,ticks:{callback:v=>v+'%'},grid:{color:'#F0F0F0'}},x:{grid:{display:false},ticks:{font:{size:10}}}}}
+  });
+  const c2=new Chart(document.getElementById('rmDistMayorChart'),{
+    type:'line',
+    data:{labels:rmDistLabels,_zoneBgTypes:rmDistTypes,datasets:[
+      {label:"박윤국 1선",data:rmDistData.map(d=>d.mayor?.d1?.park??null),borderColor:"#004EA2",borderWidth:2.5,
+      pointRadius:bigSamplePointRadius(rmDistData,5),pointBackgroundColor:bigSamplePointBg(rmDistData,"#004EA2"),tension:0.3,fill:false,borderDash:[]},
+      {label:"박윤국 2선",data:rmDistData.map(d=>d.mayor?.d2?.park??null),borderColor:"#004EA2",borderWidth:2,
+      pointRadius:bigSamplePointRadius(rmDistData,4),pointBackgroundColor:bigSamplePointBg(rmDistData,"#004EA2"),tension:0.3,fill:false,borderDash:[6,3]},
+      {label:"백영현 1선",data:rmDistData.map(d=>d.mayor?.d1?.baek??null),borderColor:"#C9151E",borderWidth:2.5,
+      pointRadius:bigSamplePointRadius(rmDistData,5),pointBackgroundColor:bigSamplePointBg(rmDistData,"#C9151E"),tension:0.3,fill:false,borderDash:[]},
+      {label:"백영현 2선",data:rmDistData.map(d=>d.mayor?.d2?.baek??null),borderColor:"#C9151E",borderWidth:2,
+      pointRadius:bigSamplePointRadius(rmDistData,4),pointBackgroundColor:bigSamplePointBg(rmDistData,"#C9151E"),tension:0.3,fill:false,borderDash:[6,3]}
+    ]},
+    options:{responsive:true,maintainAspectRatio:false,
+      plugins:{legend:{display:false},zoneBg:{},
+        tooltip:{callbacks:{title:ctx=>rmDistLabels[ctx[0].dataIndex],
+          beforeBody:ctx=>{const i=ctx[0].dataIndex;const d=rmDistData[i];const lines=[];
+            const p1=d.mayor?.d1?.park,p2=d.mayor?.d2?.park,b1=d.mayor?.d1?.baek,b2=d.mayor?.d2?.baek;
+            if(p1!=null)lines.push(`박윤국 1선: ${p1.toFixed(1)}%`);
+            if(p2!=null)lines.push(`박윤국 2선: ${p2.toFixed(1)}%`);
+            if(p1!=null&&p2!=null)lines.push(`  차이: ${Math.abs(p1-p2).toFixed(1)}%p`);
+            lines.push('──────────────');
+            if(b1!=null)lines.push(`백영현 1선: ${b1.toFixed(1)}%`);
+            if(b2!=null)lines.push(`백영현 2선: ${b2.toFixed(1)}%`);
+            if(b1!=null&&b2!=null)lines.push(`  차이: ${Math.abs(b1-b2).toFixed(1)}%p`);
+            return lines;},label:()=>null},displayColors:false}},
+      scales:{y:{min:20,max:65,ticks:{callback:v=>v+'%'},grid:{color:'#F0F0F0'}},x:{grid:{display:false},ticks:{font:{size:10}}}}}
+  });
+})();
+
+// 알앤써치 선거구별 차트
+(()=>{
+  const rnsDistData = DIST_DATA.filter(d=>d.label.includes('알앤써치') && (d.party?.d1 || d.mayor?.d1));
+  const rnsDistLabels = rnsDistData.map((d,i)=>i===0?'2026.'+d.date:d.date);
+  const rnsDistTypes = rnsDistData.map(d=>d.type);
+  new Chart(document.getElementById('rnsDistPartyChart'),{
+    type:'bar',
+    data:{labels:rnsDistLabels,datasets:[
+      {label:"민주 1선거구",data:rnsDistData.map(d=>d.party?.d1?.민주??null),backgroundColor:"#004EA2AA",borderRadius:3},
+      {label:"민주 2선거구",data:rnsDistData.map(d=>d.party?.d2?.민주??null),backgroundColor:"#004EA255",borderRadius:3},
+      {label:"국민 1선거구",data:rnsDistData.map(d=>d.party?.d1?.국힘??null),backgroundColor:"#C9151EAA",borderRadius:3},
+      {label:"국민 2선거구",data:rnsDistData.map(d=>d.party?.d2?.국힘??null),backgroundColor:"#C9151E55",borderRadius:3}
+    ]},
+    options:{responsive:true,maintainAspectRatio:false,
+      plugins:{legend:{position:'bottom',labels:{font:{size:11}}},
+        tooltip:{callbacks:{label:ctx=>ctx.parsed.y!=null?` ${ctx.dataset.label}: ${ctx.parsed.y.toFixed(1)}%`:null}}},
+      scales:{y:{min:20,max:65,ticks:{callback:v=>v+'%'},grid:{color:'#F0F0F0'}},x:{grid:{display:false}}}}
+  });
+  new Chart(document.getElementById('rnsDistMayorChart'),{
+    type:'bar',
+    data:{labels:rnsDistLabels,datasets:[
+      {label:"박윤국 1선거구",data:rnsDistData.map(d=>d.mayor?.d1?.park??null),backgroundColor:"#004EA2AA",borderRadius:3},
+      {label:"박윤국 2선거구",data:rnsDistData.map(d=>d.mayor?.d2?.park??null),backgroundColor:"#004EA255",borderRadius:3},
+      {label:"백영현 1선거구",data:rnsDistData.map(d=>d.mayor?.d1?.baek??null),backgroundColor:"#C9151EAA",borderRadius:3},
+      {label:"백영현 2선거구",data:rnsDistData.map(d=>d.mayor?.d2?.baek??null),backgroundColor:"#C9151E55",borderRadius:3}
+    ]},
+    options:{responsive:true,maintainAspectRatio:false,
+      plugins:{legend:{position:'bottom',labels:{font:{size:11}}},
+        tooltip:{callbacks:{label:ctx=>ctx.parsed.y!=null?` ${ctx.dataset.label}: ${ctx.parsed.y.toFixed(1)}%`:null}}},
+      scales:{y:{min:20,max:65,ticks:{callback:v=>v+'%'},grid:{color:'#F0F0F0'}},x:{grid:{display:false}}}}
+  });
+})();
+
+
+
+// ---- 통합 정당 차트 (1/2선거구 4라인) ----
+new Chart(document.getElementById('distPartyChart'),{
+  type:'line',
+  data:{labels:dPartyLabels,datasets:[
+    {label:"민주 1선거구",data:dPartyData.map(d=>d.party?.d1?.민주??null),borderColor:"#004EA2",borderWidth:2.5,
+    pointRadius:bigSamplePointRadius(dPartyData,5),pointBackgroundColor:bigSamplePointBg(dPartyData,"#004EA2"),tension:0.3,fill:false,borderDash:[]},
+    {label:"민주 2선거구",data:dPartyData.map(d=>d.party?.d2?.민주??null),borderColor:"#004EA2",borderWidth:2,
+    pointRadius:bigSamplePointRadius(dPartyData,4),pointBackgroundColor:bigSamplePointBg(dPartyData,"#004EA2"),tension:0.3,fill:false,borderDash:[6,3]},
+    {label:"국민 1선거구",data:dPartyData.map(d=>d.party?.d1?.국힘??null),borderColor:"#C9151E",borderWidth:2.5,
+    pointRadius:bigSamplePointRadius(dPartyData,5),pointBackgroundColor:bigSamplePointBg(dPartyData,"#C9151E"),tension:0.3,fill:false,borderDash:[]},
+    {label:"국민 2선거구",data:dPartyData.map(d=>d.party?.d2?.국힘??null),borderColor:"#C9151E",borderWidth:2,
+    pointRadius:bigSamplePointRadius(dPartyData,4),pointBackgroundColor:bigSamplePointBg(dPartyData,"#C9151E"),tension:0.3,fill:false,borderDash:[6,3]}
+  ]},
+  options:{responsive:true,maintainAspectRatio:false,
+    plugins:{legend:{display:false},
+      tooltip:{callbacks:{
+        title:ctx=>dPartyLabels[ctx[0].dataIndex],
+        beforeBody:ctx=>{const i=ctx[0].dataIndex;const d=dPartyData[i];if(!d?.party)return[];const lines=[];
+          const d1m=d.party?.d1?.민주,d1n=d.party?.d1?.국힘,d2m=d.party?.d2?.민주,d2n=d.party?.d2?.국힘;
+          if(d1m!=null)lines.push(`민주 1선: ${d1m.toFixed(1)}%`);
+          if(d2m!=null)lines.push(`민주 2선: ${d2m.toFixed(1)}%`);
+          if(d1m!=null&&d2m!=null)lines.push(`  └ 민주 선거구 차: ${Math.abs(d1m-d2m).toFixed(1)}%p`);
+          lines.push('──────────────');
+          if(d1n!=null)lines.push(`국민 1선: ${d1n.toFixed(1)}%`);
+          if(d2n!=null)lines.push(`국민 2선: ${d2n.toFixed(1)}%`);
+          if(d1n!=null&&d2n!=null)lines.push(`  └ 국민 선거구 차: ${Math.abs(d1n-d2n).toFixed(1)}%p`);
+          return lines;},label:()=>null},displayColors:false}},
+    scales:{y:{min:20,max:65,ticks:{callback:v=>v+'%'},grid:{color:'#F0F0F0'}},x:{grid:{display:false},ticks:{font:{size:10}}}}}
 });
 
-// ── 네비게이션
-function showSection(id){
-  document.querySelectorAll('.section').forEach(el=>el.classList.remove('active'));
-  document.querySelectorAll('.nav-tab').forEach(el=>el.classList.remove('active'));
+// ---- 통합 후보 차트 (1/2선거구 4라인) ----
+const distMayorChartInst = new Chart(document.getElementById('distMayorChart'),{
+  type:'line',
+  data:{labels:dMayorLabels,_zoneBgTypes:dMayorTypes,datasets:[
+    {label:"박윤국 1선거구",data:dMayorData.map(d=>d.mayor?.d1?.park??null),borderColor:"#004EA2",borderWidth:2.5,
+    pointRadius:bigSamplePointRadius(dMayorData,5),pointBackgroundColor:bigSamplePointBg(dMayorData,"#004EA2"),tension:0.3,fill:false,borderDash:[]},
+    {label:"박윤국 2선거구",data:dMayorData.map(d=>d.mayor?.d2?.park??null),borderColor:"#004EA2",borderWidth:2,
+    pointRadius:bigSamplePointRadius(dMayorData,4),pointBackgroundColor:bigSamplePointBg(dMayorData,"#004EA2"),tension:0.3,fill:false,borderDash:[6,3]},
+    {label:"백영현 1선거구",data:dMayorData.map(d=>d.mayor?.d1?.baek??null),borderColor:"#C9151E",borderWidth:2.5,
+    pointRadius:bigSamplePointRadius(dMayorData,5),pointBackgroundColor:bigSamplePointBg(dMayorData,"#C9151E"),tension:0.3,fill:false,borderDash:[]},
+    {label:"백영현 2선거구",data:dMayorData.map(d=>d.mayor?.d2?.baek??null),borderColor:"#C9151E",borderWidth:2,
+    pointRadius:bigSamplePointRadius(dMayorData,4),pointBackgroundColor:bigSamplePointBg(dMayorData,"#C9151E"),tension:0.3,fill:false,borderDash:[6,3]}
+  ]},
+  options:{responsive:true,maintainAspectRatio:false,
+    plugins:{legend:{display:false},zoneBg:{},
+      tooltip:{callbacks:{
+        title:ctx=>dMayorLabels[ctx[0].dataIndex],
+        beforeBody:ctx=>{const i=ctx[0].dataIndex;const d=dMayorData[i];if(!d?.mayor)return[];const lines=[];
+          const p1=d.mayor?.d1?.park,p2=d.mayor?.d2?.park,b1=d.mayor?.d1?.baek,b2=d.mayor?.d2?.baek;
+          if(p1!=null)lines.push(`박윤국 1선: ${p1.toFixed(1)}%`);
+          if(p2!=null)lines.push(`박윤국 2선: ${p2.toFixed(1)}%`);
+          if(p1!=null&&p2!=null)lines.push(`  └ 박 선거구 차: ${Math.abs(p1-p2).toFixed(1)}%p`);
+          lines.push('──────────────');
+          if(b1!=null)lines.push(`백영현 1선: ${b1.toFixed(1)}%`);
+          if(b2!=null)lines.push(`백영현 2선: ${b2.toFixed(1)}%`);
+          if(b1!=null&&b2!=null)lines.push(`  └ 백 선거구 차: ${Math.abs(b1-b2).toFixed(1)}%p`);
+          return lines;},label:()=>null},displayColors:false}},
+    scales:{y:{min:25,max:65,ticks:{callback:v=>v+'%'},grid:{color:'#F0F0F0'}},x:{grid:{display:false},ticks:{font:{size:10}}}}}
+});
+
+// ---- 4권역 선택형 차트 ----
+
+
+// ---- 정당 탭 4권역 차트 ----
+let zonePChart=null;
+function selectZoneParty(zone){
+  ['A','B','C','D'].forEach(z=>{
+    const btn=document.getElementById('zonePBtn-'+z);
+    if(!btn)return;
+    const on=z===zone;
+    btn.style.background=on?(['A','B'].includes(z)?'#DCFCE7':'#FEF9C3'):'#fff';
+    btn.style.borderColor=on?(['A','B'].includes(z)?'#16A34A':'#CA8A04'):'#9CA3AF';
+    btn.style.color=on?(['A','B'].includes(z)?'#14532D':'#713F12'):'#4B5563';
+    btn.style.fontWeight=on?'700':'600';
+  });
+  const titles={A:'A권역 (포천동·선단동)',B:'B권역 (군내·신북 등)',C:'C권역 (소흘읍)',D:'D권역 (내촌·가산 등)'};
+  document.getElementById('zonePChartTitle').textContent=titles[zone]+' — 더불어민주당 vs 국민의힘';
+  const data=DIST_DATA.filter(d=>d.party?.[zone]);
+  const labels=data.map((d,i)=>i===0?'2026.'+d.date:d.date);
+  if(zonePChart)zonePChart.destroy();
+  zonePChart=new Chart(document.getElementById('distZonePartyChart'),{
+    type:'line',
+    data:{labels,datasets:[
+      {label:"더불어민주당",data:data.map(d=>d.party[zone].민주??null),borderColor:"#004EA2",backgroundColor:"#004EA222",borderWidth:2.5,
+       pointRadius:bigSamplePointRadius(data,5),pointBackgroundColor:bigSamplePointBg(data,"#004EA2"),tension:0.3,fill:false},
+      {label:"국민의힘",data:data.map(d=>d.party[zone].국힘??null),borderColor:"#C9151E",backgroundColor:"#C9151E22",borderWidth:2.5,
+       pointRadius:bigSamplePointRadius(data,5),pointBackgroundColor:bigSamplePointBg(data,"#C9151E"),tension:0.3,fill:false}
+    ]},
+    options:{responsive:true,maintainAspectRatio:false,
+      plugins:{legend:{position:'bottom',labels:{font:{size:11}}},
+        tooltip:{callbacks:{
+          title:ctx=>{const d=data[ctx[0].dataIndex];return`${d.sampleSize>=1000?'⬤ ':''}${d.short||d.label}  ·  ${d.date}${d.sampleSize>=1000?'  ('+d.sampleSize.toLocaleString()+'명)':''}`;},
+          beforeBody:ctx=>{const d=data[ctx[0].dataIndex];const m=d.party[zone].민주,n=d.party[zone].국힘;
+            const diff=Math.abs(m-n).toFixed(1);const lead=m>n?'민주':'국민';
+            return[`민주: ${m.toFixed(1)}%`,`국민: ${n.toFixed(1)}%`,'──────────────',`격차: ${lead} +${diff}%p`];},label:()=>null},displayColors:false}},
+      scales:{y:{min:20,max:65,ticks:{callback:v=>v+'%'},grid:{color:'#F0F0F0'}},x:{grid:{display:false},ticks:{font:{size:10}}}}}
+  });
+}
+selectZoneParty('A');
+
+// ---- 후보 탭 4권역 차트 ----
+let zoneMChart=null;
+function selectZoneMayor(zone){
+  ['A','B','C','D'].forEach(z=>{
+    const btn=document.getElementById('zoneMBtn-'+z);
+    if(!btn)return;
+    const on=z===zone;
+    btn.style.background=on?(['A','B'].includes(z)?'#DCFCE7':'#FEF9C3'):'#fff';
+    btn.style.borderColor=on?(['A','B'].includes(z)?'#16A34A':'#CA8A04'):'#9CA3AF';
+    btn.style.color=on?(['A','B'].includes(z)?'#14532D':'#713F12'):'#4B5563';
+    btn.style.fontWeight=on?'700':'600';
+  });
+  const titles={A:'A권역 (포천동·선단동)',B:'B권역 (군내·신북 등)',C:'C권역 (소흘읍)',D:'D권역 (내촌·가산 등)'};
+  document.getElementById('zoneMChartTitle').textContent=titles[zone]+' — 박윤국 vs 백영현';
+  const data=DIST_DATA.filter(d=>d.mayor?.[zone]);
+  const labels=data.map((d,i)=>i===0?'2026.'+d.date:d.date);
+  const types=data.map(d=>d.type);
+  if(zoneMChart)zoneMChart.destroy();
+  zoneMChart=new Chart(document.getElementById('distZoneMayorChart'),{
+    type:'line',
+    data:{labels,_zoneBgTypes:types,datasets:[
+      {label:"박윤국",data:data.map(d=>d.mayor[zone].park??null),borderColor:"#004EA2",backgroundColor:"#004EA222",borderWidth:2.5,
+       pointRadius:bigSamplePointRadius(data,5),pointBackgroundColor:bigSamplePointBg(data,"#004EA2"),tension:0.3,fill:false},
+      {label:"백영현",data:data.map(d=>d.mayor[zone].baek??null),borderColor:"#C9151E",backgroundColor:"#C9151E22",borderWidth:2.5,
+       pointRadius:bigSamplePointRadius(data,5),pointBackgroundColor:bigSamplePointBg(data,"#C9151E"),tension:0.3,fill:false}
+    ]},
+    options:{responsive:true,maintainAspectRatio:false,
+      plugins:{legend:{position:'bottom',labels:{font:{size:11}}},zoneBg:{},
+        tooltip:{callbacks:{
+          title:ctx=>{const d=data[ctx[0].dataIndex];return`${d.sampleSize>=1000?'⬤ ':''}${d.short||d.label}  ·  ${d.date}${d.sampleSize>=1000?'  ('+d.sampleSize.toLocaleString()+'명)':''}`;},
+          beforeBody:ctx=>{const d=data[ctx[0].dataIndex];const p=d.mayor[zone].park,b=d.mayor[zone].baek;
+            const diff=Math.abs(p-b).toFixed(1);const lead=p>b?'박윤국':'백영현';
+            return[`박윤국: ${p.toFixed(1)}%`,`백영현: ${b.toFixed(1)}%`,'──────────────',`격차: ${lead} +${diff}%p`];},label:()=>null},displayColors:false}},
+      scales:{y:{min:25,max:65,ticks:{callback:v=>v+'%'},grid:{color:'#F0F0F0'}},x:{grid:{display:false},ticks:{font:{size:10}}}}}
+  });
+}
+selectZoneMayor('A');
+
+// ---- 정당 수치표 ----
+(()=>{
+  const tH=`<thead><tr><th>조사기관</th><th>조사일</th><th style="color:#4F9EFF">1선거구 민주</th><th style="color:#FF6B6B">1선거구 국민</th><th>1선 격차</th><th style="color:#4F9EFF">2선거구 민주</th><th style="color:#FF6B6B">2선거구 국민</th><th>2선 격차</th></tr></thead>`;
+  const tB='<tbody>'+dPartyData.map((d,i)=>{
+    const p1=d.party?.d1, p2=d.party?.d2;
+    const d1m=p1?.민주,d1n=p1?.국힘,d2m=p2?.민주,d2n=p2?.국힘;
+    const diff1=d1m!=null&&d1n!=null?(d1m-d1n).toFixed(1):null;
+    const diff2=d2m!=null&&d2n!=null?(d2m-d2n).toFixed(1):null;
+    const bg1=d1m!=null&&d1n!=null?(d1m>d1n?'background:#EFF6FF':'background:#FFF5F5'):'';
+    const bg2=d2m!=null&&d2n!=null?(d2m>d2n?'background:#EFF6FF':'background:#FFF5F5'):'';
+    return `<tr>
+      <td>${d.sampleSize>=1000?"<span style='color:#CA8A04;font-weight:700'>⬤</span> ":""}${d.short||d.label}</td><td>${i===0?"2026.":""}${d.date}</td>
+      <td style="${bg1};color:#004EA2;font-weight:600">${d1m!=null?d1m.toFixed(1)+'%':'—'}</td>
+      <td style="${bg1};color:#C9151E;font-weight:600">${d1n!=null?d1n.toFixed(1)+'%':'—'}</td>
+      <td style="${bg1};font-weight:600">${diff1!=null?(parseFloat(diff1)>0?'민주 +'+diff1:'국민 +'+Math.abs(diff1)):'—'}</td>
+      <td style="${bg2};color:#004EA2;font-weight:600">${d2m!=null?d2m.toFixed(1)+'%':'—'}</td>
+      <td style="${bg2};color:#C9151E;font-weight:600">${d2n!=null?d2n.toFixed(1)+'%':'—'}</td>
+      <td style="${bg2};font-weight:600">${diff2!=null?(parseFloat(diff2)>0?'민주 +'+diff2:'국민 +'+Math.abs(diff2)):'—'}</td>
+    </tr>`;
+  }).join('')+'</tbody>';
+  document.getElementById('distPartyTable').innerHTML=tH+tB;
+})();
+
+// ---- 후보 수치표 ----
+(()=>{
+  const tH=`<thead><tr><th>조사기관</th><th>조사일</th><th>유형</th><th style="color:#4F9EFF">1선 박</th><th style="color:#FF6B6B">1선 백</th><th>1선 격차</th><th style="color:#4F9EFF">2선 박</th><th style="color:#FF6B6B">2선 백</th><th>2선 격차</th></tr></thead>`;
+  const tB='<tbody>'+dMayorData.map((d,i)=>{
+    const m1=d.mayor?.d1, m2=d.mayor?.d2;
+    const isV=(d.type==='가상대결'||d.type==='다자대결');
+    const badge=isV?`<span style="background:#FEF3C7;color:#92400E;padding:2px 6px;border-radius:8px;font-size:10px">${d.type}</span>`:`<span style="background:#D1FAE5;color:#065F46;padding:2px 6px;border-radius:8px;font-size:10px">${d.type}</span>`;
+    const p1=m1?.park,b1=m1?.baek,p2=m2?.park,b2=m2?.baek;
+    const diff1=p1!=null&&b1!=null?(p1-b1).toFixed(1):null;
+    const diff2=p2!=null&&b2!=null?(p2-b2).toFixed(1):null;
+    const bg1=p1!=null&&b1!=null?(p1>b1?'background:#EFF6FF':'background:#FFF5F5'):'';
+    const bg2=p2!=null&&b2!=null?(p2>b2?'background:#EFF6FF':'background:#FFF5F5'):'';
+    return `<tr>
+      <td>${d.sampleSize>=1000?"<span style='color:#CA8A04;font-weight:700'>⬤</span> ":""}${d.short||d.label}</td><td>${i===0?"2026.":""}${d.date}</td><td>${badge}</td>
+      <td style="${bg1};color:#004EA2;font-weight:600">${p1!=null?p1.toFixed(1)+'%':'—'}</td>
+      <td style="${bg1};color:#C9151E;font-weight:600">${b1!=null?b1.toFixed(1)+'%':'—'}</td>
+      <td style="${bg1};font-weight:600">${diff1!=null?(parseFloat(diff1)>0?'박 +'+diff1:'백 +'+Math.abs(diff1)):'—'}</td>
+      <td style="${bg2};color:#004EA2;font-weight:600">${p2!=null?p2.toFixed(1)+'%':'—'}</td>
+      <td style="${bg2};color:#C9151E;font-weight:600">${b2!=null?b2.toFixed(1)+'%':'—'}</td>
+      <td style="${bg2};font-weight:600">${diff2!=null?(parseFloat(diff2)>0?'박 +'+diff2:'백 +'+Math.abs(diff2)):'—'}</td>
+    </tr>`;
+  }).join('')+'</tbody>';
+  document.getElementById('distMayorTable').innerHTML=tH+tB;
+})();
+
+// ---- 4권역 상세 수치표 (후보) ----
+(()=>{
+  const tH=`<thead><tr><th>조사기관</th><th>조사일</th><th>유형</th><th colspan="2" style="text-align:center;background:#DCFCE7;color:#14532D;font-weight:700">A권역(포천·선단)</th><th colspan="2" style="text-align:center;background:#DCFCE7;color:#14532D;font-weight:700">B권역(군내·신북 등)</th><th colspan="2" style="text-align:center;background:#FEF9C3;color:#713F12;font-weight:700">C권역(소흘읍)</th><th colspan="2" style="text-align:center;background:#FEF9C3;color:#713F12;font-weight:700">D권역(내촌·가산 등)</th></tr>
+  <tr><th></th><th></th><th></th><th style="color:#004EA2">박</th><th style="color:#C9151E">백</th><th style="color:#004EA2">박</th><th style="color:#C9151E">백</th><th style="color:#004EA2">박</th><th style="color:#C9151E">백</th><th style="color:#004EA2">박</th><th style="color:#C9151E">백</th></tr></thead>`;
+  const tB='<tbody>'+DIST_DATA.filter(d=>d.mayor?.A||d.mayor?.B||d.mayor?.C||d.mayor?.D).map((d,i)=>{
+    const isV=(d.type==='가상대결'||d.type==='다자대결');
+    const badge=isV?`<span style="background:#FEF3C7;color:#92400E;padding:2px 6px;border-radius:8px;font-size:10px">${d.type}</span>`:`<span style="background:#D1FAE5;color:#065F46;padding:2px 6px;border-radius:8px;font-size:10px">${d.type}</span>`;
+    const A=d.mayor?.A,B=d.mayor?.B,C=d.mayor?.C,D=d.mayor?.D;
+    const bgA=A?(Math.abs(A.park-A.baek)<0.05?'background:#F3F4F6':A.park>A.baek?'background:#EFF6FF':'background:#FFF5F5'):'';
+    const bgB=B?(Math.abs(B.park-B.baek)<0.05?'background:#F3F4F6':B.park>B.baek?'background:#EFF6FF':'background:#FFF5F5'):'';
+    const bgC=C?(Math.abs(C.park-C.baek)<0.05?'background:#F3F4F6':C.park>C.baek?'background:#EFF6FF':'background:#FFF5F5'):'';
+    const bgD=D?(Math.abs(D.park-D.baek)<0.05?'background:#F3F4F6':D.park>D.baek?'background:#EFF6FF':'background:#FFF5F5'):'';
+    return `<tr>
+      <td>${d.sampleSize>=1000?"<span style='color:#CA8A04;font-weight:700'>⬤</span> ":""}${d.short||d.label}</td><td>${i===0?"2026.":""}${d.date}</td><td>${badge}</td>
+      <td style="${bgA};color:#004EA2;font-weight:600">${A?A.park.toFixed(1)+'%':'—'}</td><td style="${bgA};color:#C9151E;font-weight:600">${A?A.baek.toFixed(1)+'%':'—'}</td>
+      <td style="${bgB};color:#004EA2;font-weight:600">${B?B.park.toFixed(1)+'%':'—'}</td><td style="${bgB};color:#C9151E;font-weight:600">${B?B.baek.toFixed(1)+'%':'—'}</td>
+      <td style="${bgC};color:#004EA2;font-weight:600">${C?C.park.toFixed(1)+'%':'—'}</td><td style="${bgC};color:#C9151E;font-weight:600">${C?C.baek.toFixed(1)+'%':'—'}</td>
+      <td style="${bgD};color:#004EA2;font-weight:600">${D?D.park.toFixed(1)+'%':'—'}</td><td style="${bgD};color:#C9151E;font-weight:600">${D?D.baek.toFixed(1)+'%':'—'}</td>
+    </tr>`;
+  }).join('')+'</tbody>';
+  document.getElementById('distDetailTable').innerHTML=tH+tB;
+})();
+
+// ---- 4권역 정당 상세 수치표 ----
+(()=>{
+  const tH=`<thead><tr><th>조사기관</th><th>조사일</th><th colspan="2" style="text-align:center;background:#DCFCE7;color:#14532D;font-weight:700">A권역(포천·선단)</th><th colspan="2" style="text-align:center;background:#DCFCE7;color:#14532D;font-weight:700">B권역(군내·신북 등)</th><th colspan="2" style="text-align:center;background:#FEF9C3;color:#713F12;font-weight:700">C권역(소흘읍)</th><th colspan="2" style="text-align:center;background:#FEF9C3;color:#713F12;font-weight:700">D권역(내촌·가산 등)</th></tr>
+  <tr><th></th><th></th><th style="color:#004EA2">민주</th><th style="color:#C9151E">국민</th><th style="color:#004EA2">민주</th><th style="color:#C9151E">국민</th><th style="color:#004EA2">민주</th><th style="color:#C9151E">국민</th><th style="color:#004EA2">민주</th><th style="color:#C9151E">국민</th></tr></thead>`;
+  const tB='<tbody>'+DIST_DATA.filter(d=>d.party?.A||d.party?.B||d.party?.C||d.party?.D).map((d,i)=>{
+    const A=d.party?.A,B=d.party?.B,C=d.party?.C,D=d.party?.D;
+    const bgA=A?(Math.abs(A.민주-A.국힘)<0.05?'background:#F3F4F6':A.민주>A.국힘?'background:#EFF6FF':'background:#FFF5F5'):'';
+    const bgB=B?(Math.abs(B.민주-B.국힘)<0.05?'background:#F3F4F6':B.민주>B.국힘?'background:#EFF6FF':'background:#FFF5F5'):'';
+    const bgC=C?(Math.abs(C.민주-C.국힘)<0.05?'background:#F3F4F6':C.민주>C.국힘?'background:#EFF6FF':'background:#FFF5F5'):'';
+    const bgD=D?(Math.abs(D.민주-D.국힘)<0.05?'background:#F3F4F6':D.민주>D.국힘?'background:#EFF6FF':'background:#FFF5F5'):'';
+    return `<tr>
+      <td>${d.sampleSize>=1000?"<span style='color:#CA8A04;font-weight:700'>⬤</span> ":""}${d.short||d.label}</td><td>${i===0?"2026.":""}${d.date}</td>
+      <td style="${bgA};color:#004EA2;font-weight:600">${A?A.민주.toFixed(1)+'%':'—'}</td><td style="${bgA};color:#C9151E;font-weight:600">${A?A.국힘.toFixed(1)+'%':'—'}</td>
+      <td style="${bgB};color:#004EA2;font-weight:600">${B?B.민주.toFixed(1)+'%':'—'}</td><td style="${bgB};color:#C9151E;font-weight:600">${B?B.국힘.toFixed(1)+'%':'—'}</td>
+      <td style="${bgC};color:#004EA2;font-weight:600">${C?C.민주.toFixed(1)+'%':'—'}</td><td style="${bgC};color:#C9151E;font-weight:600">${C?C.국힘.toFixed(1)+'%':'—'}</td>
+      <td style="${bgD};color:#004EA2;font-weight:600">${D?D.민주.toFixed(1)+'%':'—'}</td><td style="${bgD};color:#C9151E;font-weight:600">${D?D.국힘.toFixed(1)+'%':'—'}</td>
+    </tr>`;
+  }).join('')+'</tbody>';
+  document.getElementById('distPartyDetailTable').innerHTML=tH+tB;
+})();
+
+// ============================================================
+let currentSection='party';
+
+function showSection(id,el){
+  document.querySelectorAll('.section').forEach(s=>s.classList.remove('active'));
+  document.querySelectorAll('.nav-tab').forEach(t=>t.classList.remove('active'));
   document.getElementById(id).classList.add('active');
-  event.target.classList.add('active');
+  currentSection=id;
+  if(el) el.classList.add('active');
   window.scrollTo(0,0);
 }
+
 function showTab(el,id){
   el.closest('.section').querySelectorAll('.tab-inner').forEach(t=>t.classList.remove('active'));
   el.closest('.section').querySelectorAll('.tab-panel').forEach(p=>p.classList.remove('active'));
